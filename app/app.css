@@ -1,0 +1,59 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Roboto Variable", sans-serif;
+}
+
+header {
+  padding: .5rem;
+  border-bottom: 1px solid rgb(163, 163, 163);
+  display: flex;
+  justify-content: space-between;
+}
+
+.home-links {
+  display: flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  gap: .25rem;
+}
+
+.home-links span {
+  margin: 0;
+  font-size: x-large;
+}
+
+.header-icon {
+  width: 2.5rem;
+}
+
+nav {
+  display: flex;
+  align-items: center;
+}
+
+.search-wrapper {
+  height: 80%;
+  display: flex;
+  align-items: center;
+}
+
+.search-wrapper input {
+  height: 100%;
+  width: 4rem;
+  border: 1px solid rgb(163, 163, 163);
+  border-radius: 4px;
+  margin: 0 1px;
+
+}
+
+.search-wrapper input:focus {
+  border: 2px solid #044f31;
+  margin: 0;
+  outline: none;
+}
