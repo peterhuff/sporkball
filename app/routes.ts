@@ -8,6 +8,11 @@ import {
 export default [
     layout("layouts/header.tsx", [
         index("routes/home.tsx"),
+        route(
+            "search-players",
+            "routes/search-players.tsx"
+        ),
+        route("players/:playerName/:playerId", "routes/player.tsx"),
     ]),
 ] satisfies RouteConfig;
 

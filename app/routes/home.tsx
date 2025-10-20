@@ -1,7 +1,7 @@
 
 export default function Home() {
   return (
-    <div>
+    <div className="home-contents">
       <title>Sporkball</title>
       <meta
         name="description"

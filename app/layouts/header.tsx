@@ -1,30 +1,170 @@
-import { Outlet, Link } from "react-router";
-import BaseballIcon from "~/images/baseball.svg";
+import { Outlet, Link, useFetcher } from "react-router";
+import type { Route } from "./+types/header";
+import { useState } from "react";
+import type { clientLoader } from "~/routes/search-players";
 
-export default function HeaderLayout() {
+import BaseballIcon from "~/images/baseball.svg";
+import SearchIcon from "~/images/search.svg";
+import MenuIcon from "~/images/menu.svg";
+import ExitIcon from "~/images/exit.svg";
+import SearchIconGray from "~/images/search-gray.svg";
+
+import type { PlayerId } from "~/util";
+
+export async function loader() {
+    const url = "https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=totalPlateAppearances&fields=leagueLeaders,leaders,person,id,fullName&limit=10";
+    const response = await fetch(url)
+        .then((res) => res.json());
+    const topPlayers: Array<PlayerId> = response.leagueLeaders[0].leaders.map((player: any) => player.person);
+    if (!topPlayers) {
+        throw new Response("Not Found", { status: 404 });
+    }
+    return { topPlayers };
+}
+
+export default function HeaderLayout({
+    loaderData,
+}: Route.ComponentProps) {
+    const { topPlayers } = loaderData;
+
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchValue, setSearchValue] = useState("");
+    const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout | null>(null);
+
+    const fetcher = useFetcher<typeof clientLoader>();
+
+    const searchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchValue(event.target.value);
+
+        if (delayTimer) {
+            clearTimeout(delayTimer);
+        }
+
+        const newTimer = setTimeout(() => {
+            fetcher.submit(event.target.form);
+        }, 500);
+
+        setDelayTimer(newTimer);
+    }
+
     return (
         <>
             <header>
-                <Link className="home-links" to="/">
-                    <img
-                        src={BaseballIcon}
-                        alt="Baseball icon"
-                        className="header-icon"
-                    />
-                    <span>Sporkball</span>
-                </Link>
-                <nav>
-                    <div className="search-wrapper">
-                        <input
-                            type="text"
-                            placeholder="Search"
+                {isSearching ? null : (
+                    <Link className="home-links" to="/">
+                        <img
+                            src={BaseballIcon}
+                            alt="Baseball icon"
+                            className="header-icon"
                         />
-                    </div>
-                </nav>
-            </header>
+                        <span>SPORKBALL</span>
+                    </Link>
+                )}
+
+                {isSearching ? (
+                    <nav>
+                        <div className="search-wrapper">
+                            <img
+                                src={SearchIconGray}
+                                alt="Search icon"
+                                className="search-icon"
+                            />
+                            <fetcher.Form method="get" action="/search-players">
+                                <input
+                                    type="search"
+                                    name="q"
+                                    value={searchValue}
+                                    onChange={(event) => {
+                                        searchChanged(event);
+                                    }}
+                                    className="player-search"
+                                    placeholder="Search"
+                                    autoComplete="off"
+                                />
+                            </fetcher.Form>
+                        </div>
+                        <button
+                            type="button"
+                            className="nav-button-mobile"
+                            onClick={() => setIsSearching(false)}
+                        >
+                            <img
+                                src={ExitIcon}
+                                alt="Exit icon"
+                                className="nav-icon"
+                            />
+                        </button>
+                    </nav>
+
+                ) : (
+                    <nav>
+                        <button
+                            type="button"
+                            className="search-button"
+                            onClick={() => setIsSearching(true)}
+                        >
+                            <img
+                                src={SearchIcon}
+                                alt="Search icon"
+                                className="search-icon"
+                            />
+                        </button>
+                        <button
+                            type="button"
+                            className="nav-button-mobile"
+                        >
+                            <img
+                                src={MenuIcon}
+                                alt="Menu icon"
+                                className="nav-icon"
+                            />
+                        </button>
+                    </nav>
+                )}
+                {isSearching ? (
+                    <ul
+                        className="search-results"
+                        style={{
+                            color: fetcher.state === "idle" ? "rgb(0, 0, 0, 1)" : "rgb(0, 0, 0, .25)",
+                        }}
+                    >
+                        {(fetcher.data && fetcher.data.length > 0) ?
+                            fetcher.data.map((player) => (
+                                <li key={player.id}>
+                                    <Link 
+                                        to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                        onClick={() => setIsSearching(false)}
+                                    >
+                                        {player.fullName}
+                                    </Link>
+                                </li>
+                            ))
+                            :
+                            topPlayers.map((player) => (
+                                <li key={player.id}>
+                                    <Link 
+                                        to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                        onClick={() => setIsSearching(false)}
+                                    >
+                                        {player.fullName}
+                                    </Link>                                
+                                </li>
+                            ))
+                        }
+                    </ul>
+                ) : null}
+            </header >
             <div className="content">
                 <Outlet />
             </div>
         </>
     );
+}
+
+function urlName(fullName: string): string {
+    const lowerCase = fullName.toLowerCase();
+    const underscore = lowerCase.replaceAll(' ', '_');
+    const noPeriods = underscore.replaceAll('.', '');
+    const normalized = noPeriods.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return normalized;
 }
