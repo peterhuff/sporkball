@@ -1,4 +1,9 @@
-import { Outlet, Link, useFetcher } from "react-router";
+import {
+    Outlet,
+    Link,
+    useFetcher,
+    useNavigation,
+} from "react-router";
 import type { Route } from "./+types/header";
 import { useState } from "react";
 import type { clientLoader } from "~/routes/search-players";
@@ -26,6 +31,7 @@ export default function HeaderLayout({
     loaderData,
 }: Route.ComponentProps) {
     const { topPlayers } = loaderData;
+    const navigation = useNavigation();
 
     const [isSearching, setIsSearching] = useState(false);
     const [searchValue, setSearchValue] = useState("");
@@ -42,7 +48,7 @@ export default function HeaderLayout({
 
         const newTimer = setTimeout(() => {
             fetcher.submit(event.target.form);
-        }, 500);
+        }, 400);
 
         setDelayTimer(newTimer);
     }
@@ -130,10 +136,11 @@ export default function HeaderLayout({
                     >
                         {(fetcher.data && fetcher.data.length > 0) ?
                             fetcher.data.map((player) => (
-                                <li key={player.id}>
-                                    <Link 
+                                <li key={player.id} className="search-result">
+                                    <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
                                         onClick={() => setIsSearching(false)}
+                                        className="player-link"
                                     >
                                         {player.fullName}
                                     </Link>
@@ -141,20 +148,25 @@ export default function HeaderLayout({
                             ))
                             :
                             topPlayers.map((player) => (
-                                <li key={player.id}>
-                                    <Link 
+                                <li key={player.id} className="search-result">
+                                    <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
                                         onClick={() => setIsSearching(false)}
+                                        className="player-link"
                                     >
                                         {player.fullName}
-                                    </Link>                                
+                                    </Link>
                                 </li>
                             ))
                         }
                     </ul>
                 ) : null}
             </header >
-            <div className="content">
+            <div
+                className={
+                    navigation.state === "loading" ? "loading" : ""
+                }
+            >
                 <Outlet />
             </div>
         </>

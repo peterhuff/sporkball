@@ -15,6 +15,12 @@ header {
   gap: .25rem;
 }
 
+.loading {
+  opacity: 0.25;
+  transition: opacity 200ms;
+  transition-delay: 200ms;
+}
+
 .home-links {
   padding: .5rem;
   display: flex;
@@ -125,8 +131,17 @@ nav {
   list-style-type: none;
   margin-top: 1px;
   margin-bottom: 0;
-  padding: 0;
+  padding: .25rem 0;
 }
 
+.search-result {
+  padding: .25rem .5rem;
+}
+
+.player-link {
+  text-decoration: none;
+  color: inherit;
+  font-weight: bold;
+}
 
 
