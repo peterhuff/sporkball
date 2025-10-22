@@ -5,7 +5,10 @@ import {
     useNavigation,
 } from "react-router";
 import type { Route } from "./+types/header";
-import { useState } from "react";
+import {
+    useState,
+    useEffect,
+} from "react";
 import type { clientLoader } from "~/routes/search-players";
 
 import BaseballIcon from "~/images/baseball.svg";
@@ -39,6 +42,14 @@ export default function HeaderLayout({
 
     const fetcher = useFetcher<typeof clientLoader>();
 
+    useEffect(() => {
+        if (navigation.state === "idle") {
+            setIsSearching(false);
+            setSearchValue("");
+            fetcher.load("/search-players");
+        }
+    }, [navigation.state]);
+
     const searchChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchValue(event.target.value);
 
@@ -47,7 +58,7 @@ export default function HeaderLayout({
         }
 
         const newTimer = setTimeout(() => {
-            fetcher.submit(event.target.form);
+            fetcher.load(`/search-players?q=${event.target.value}`);
         }, 400);
 
         setDelayTimer(newTimer);
@@ -56,7 +67,7 @@ export default function HeaderLayout({
     return (
         <>
             <header>
-                {isSearching ? null : (
+                {!isSearching &&
                     <Link className="home-links" to="/">
                         <img
                             src={BaseballIcon}
@@ -65,7 +76,7 @@ export default function HeaderLayout({
                         />
                         <span>SPORKBALL</span>
                     </Link>
-                )}
+                }
 
                 {isSearching ? (
                     <nav>
@@ -75,24 +86,26 @@ export default function HeaderLayout({
                                 alt="Search icon"
                                 className="search-icon"
                             />
-                            <fetcher.Form method="get" action="/search-players">
-                                <input
-                                    type="search"
-                                    name="q"
-                                    value={searchValue}
-                                    onChange={(event) => {
-                                        searchChanged(event);
-                                    }}
-                                    className="player-search"
-                                    placeholder="Search"
-                                    autoComplete="off"
-                                />
-                            </fetcher.Form>
+                            <input
+                                ref={selectSearch}
+                                type="search"
+                                name="q"
+                                value={searchValue}
+                                onChange={(event) => {
+                                    searchChanged(event);
+                                }}
+                                className="player-search"
+                                placeholder="Search"
+                                autoComplete="off"
+                            />
                         </div>
                         <button
                             type="button"
                             className="nav-button-mobile"
-                            onClick={() => setIsSearching(false)}
+                            onClick={() => {
+                                setIsSearching(false);
+                                // if (searchRef.current) searchRef.current.select();
+                            }}
                         >
                             <img
                                 src={ExitIcon}
@@ -107,7 +120,9 @@ export default function HeaderLayout({
                         <button
                             type="button"
                             className="search-button"
-                            onClick={() => setIsSearching(true)}
+                            onClick={() => {
+                                setIsSearching(true);
+                            }}
                         >
                             <img
                                 src={SearchIcon}
@@ -127,7 +142,7 @@ export default function HeaderLayout({
                         </button>
                     </nav>
                 )}
-                {isSearching ? (
+                {isSearching &&
                     <ul
                         className="search-results"
                         style={{
@@ -139,7 +154,7 @@ export default function HeaderLayout({
                                 <li key={player.id} className="search-result">
                                     <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        onClick={() => setIsSearching(false)}
+                                        // onClick={() => setIsSearching(false)}
                                         className="player-link"
                                     >
                                         {player.fullName}
@@ -151,7 +166,7 @@ export default function HeaderLayout({
                                 <li key={player.id} className="search-result">
                                     <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        onClick={() => setIsSearching(false)}
+                                        // onClick={() => setIsSearching(false)}
                                         className="player-link"
                                     >
                                         {player.fullName}
@@ -160,7 +175,7 @@ export default function HeaderLayout({
                             ))
                         }
                     </ul>
-                ) : null}
+                }
             </header >
             <div
                 className={
@@ -179,4 +194,8 @@ function urlName(fullName: string): string {
     const noPeriods = underscore.replaceAll('.', '');
     const normalized = noPeriods.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     return normalized;
+}
+
+function selectSearch(node: HTMLInputElement): void {
+    node?.select();
 }

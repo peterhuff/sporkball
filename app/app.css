@@ -123,6 +123,7 @@ nav {
 
 .search-results {
   position: absolute;
+  z-index: 1;
   top: 3rem;
   background-color: white;
   border-bottom: 1px solid rgb(163, 163, 163);
