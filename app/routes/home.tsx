@@ -2,7 +2,7 @@
 export default function Home() {
   return (
     <div className="home-contents">
-      <title>Sporkball</title>
+      <title>Home | Sporkball</title>
       <meta
         name="description"
         content="Sporkball Baseball homepage"

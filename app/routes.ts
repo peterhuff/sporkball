@@ -8,6 +8,7 @@ import {
 export default [
     layout("layouts/header.tsx", [
         index("routes/home.tsx"),
+        route("about", "routes/about.tsx"),
         route(
             "search-players",
             "routes/search-players.tsx"

@@ -44,8 +44,16 @@ header {
 nav {
   flex-grow: 1;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: .25rem;
+}
+
+.nav-buttons {
+  display: flex;
   justify-content: flex-end;
   align-items: center;
+  height: 100%;
   gap: .25rem;
 }
 

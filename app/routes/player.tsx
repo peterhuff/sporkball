@@ -16,8 +16,8 @@ export async function loader({ params }: Route.LoaderArgs) {
     //             .then((res) => res.json());
     //         return orgTeam.teams[0].name;
     //     }
-    //     return player.currentTeam.name
-    // }
+    //     return player.currentTeam.name;
+    // };
     // const currentOrg = await getCurrentOrg(player.currentTeam);
     return { player };
 }
@@ -26,6 +26,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     const { player } = loaderData
     return (
         <div className="player-page">
+            <title>{`${player.fullName} | Sporkball`}</title>
             <h1>{player.fullName}</h1>
         </div>
     );
