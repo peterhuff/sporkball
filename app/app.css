@@ -15,6 +15,7 @@ header {
   gap: .25rem;
 }
 
+/* Fades page while loading new one */
 .loading {
   opacity: 0.25;
   transition: opacity 200ms;
@@ -129,7 +130,7 @@ nav {
   color: rgb(102, 102, 102);
 }
 
-.search-results {
+.header-addition {
   position: absolute;
   z-index: 1;
   top: 3rem;
@@ -143,11 +144,15 @@ nav {
   padding: .25rem 0;
 }
 
+.text-right {
+  text-align: end;
+}
+
 .search-result {
   padding: .25rem .5rem;
 }
 
-.player-link {
+.nav-link {
   text-decoration: none;
   color: inherit;
   font-weight: bold;

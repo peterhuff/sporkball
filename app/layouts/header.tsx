@@ -39,15 +39,17 @@ export async function loader() {
     return { topPlayers };
 }
 
+type HeaderMode = 'none' | 'search' | 'menu';
+
 export default function HeaderLayout({
     loaderData,
 }: Route.ComponentProps) {
 
-    const { topPlayers } = loaderData;
+    const { topPlayers } = loaderData; // top 10 players by plate appearances
     const navigation = useNavigation();
 
     // state variables
-    const [isSearching, setIsSearching] = useState(false);
+    const [headerMode, setHeaderMode] = useState<HeaderMode>('none');
     const [searchValue, setSearchValue] = useState("");
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout | null>(null); // delay timer for searchbar
 
@@ -67,8 +69,8 @@ export default function HeaderLayout({
 
     // effect event allows checking isSearching without making it a dependency
     const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-        if (event.key === "Escape" && isSearching) {
-            setIsSearching(false);
+        if (event.key === "Escape" && headerMode === 'search') {
+            setHeaderMode('none');
         }
     });
 
@@ -77,7 +79,7 @@ export default function HeaderLayout({
 
         // close search bar, clear input, empty search
         if (navigation.state === "idle") {
-            setIsSearching(false);
+            setHeaderMode('none');
             setSearchValue("");
             fetcher.load("/search-players");
         }
@@ -90,7 +92,7 @@ export default function HeaderLayout({
         // function defined inside of effect so dependency is not needed
         const handleClick = (event: MouseEvent) => {
             if (comboRef.current && !comboRef.current.contains(event.target as Node)) {
-                setIsSearching(false);
+                setHeaderMode('none');
             }
         }
 
@@ -131,7 +133,7 @@ export default function HeaderLayout({
                 fetcher.load("/search-players");
             }
             else {
-                setIsSearching(false);
+                setHeaderMode('none');
             }
         }
     };
@@ -139,8 +141,10 @@ export default function HeaderLayout({
     return (
         <>
             <header ref={comboRef}>
-                {isSearching ? (
+                {headerMode === 'search' ? (
+                    // if user is searching, navbar has searchbox and x button
                     <nav>
+                        {/* search box */}
                         <div className="search-wrapper">
                             <img
                                 src={SearchIconGray}
@@ -159,11 +163,12 @@ export default function HeaderLayout({
                                 autoComplete="off"
                             />
                         </div>
+                        {/* x button */}
                         <button
                             type="button"
                             className="nav-button-mobile"
                             onClick={() => {
-                                setIsSearching(false);
+                                setHeaderMode('none');
                             }}
                         >
                             <img
@@ -175,7 +180,9 @@ export default function HeaderLayout({
                     </nav>
 
                 ) : (
+                    // if user is not searching, navbar has home icon, title, search button, and menu button
                     <nav>
+                        {/* home icon and title */}
                         <Link className="home-links" to="/">
                             <img
                                 src={BaseballIcon}
@@ -185,11 +192,12 @@ export default function HeaderLayout({
                             <span>SPORKBALL</span>
                         </Link>
                         <div className="nav-buttons">
+                            {/* search button */}
                             <button
                                 type="button"
                                 className="search-button"
                                 onClick={() => {
-                                    setIsSearching(true);
+                                    setHeaderMode('search');
                                 }}
                             >
                                 <img
@@ -198,12 +206,16 @@ export default function HeaderLayout({
                                     className="search-icon"
                                 />
                             </button>
+                            {/* menu button */}
                             <button
                                 type="button"
                                 className="nav-button-mobile"
+                                onClick={() => {
+                                    setHeaderMode((headerMode === 'none' ? 'menu' : 'none'));
+                                }}
                             >
                                 <img
-                                    src={MenuIcon}
+                                    src={headerMode === 'menu' ? ExitIcon : MenuIcon}
                                     alt="Menu icon"
                                     className="nav-icon"
                                 />
@@ -211,30 +223,34 @@ export default function HeaderLayout({
                         </div>
                     </nav>
                 )}
-                {isSearching &&
+                {headerMode === 'search' &&
+                    // if user is searching, display list of search result links 
                     <ul
-                        className="search-results"
+                        className="header-addition"
+                        // fade results if new search is loading
                         style={{
                             color: fetcher.state === "idle" ? "rgb(0, 0, 0, 1)" : "rgb(0, 0, 0, .25)",
                         }}
                     >
                         {(fetcher.data && fetcher.data.length > 0) ?
+                            // if player has search results, show them
                             fetcher.data.map((player) => (
                                 <li key={player.id} className="search-result">
                                     <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        className="player-link"
+                                        className="nav-link"
                                     >
                                         {player.fullName}
                                     </Link>
                                 </li>
                             ))
                             :
+                            // otherwise, show top 10 players by PA
                             topPlayers.map((player) => (
                                 <li key={player.id} className="search-result">
                                     <Link
                                         to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        className="player-link"
+                                        className="nav-link"
                                     >
                                         {player.fullName}
                                     </Link>
@@ -243,8 +259,25 @@ export default function HeaderLayout({
                         }
                     </ul>
                 }
+                {headerMode === 'menu' &&
+                    <ul
+                        className="header-addition text-right"
+                    >
+                        <li className="search-result">
+                            <Link to="/" className="nav-link">
+                                HOME
+                            </Link>
+                        </li>
+                        <li className="search-result">
+                            <Link to="/about" className="nav-link">
+                                ABOUT
+                            </Link>
+                        </li>
+                    </ul>
+                }
             </header >
             <div
+                // content fades after delay when new page is loading
                 className={navigation.state === "loading" ? "content loading" : "content"}
             >
                 <Outlet />
