@@ -260,6 +260,7 @@ export default function HeaderLayout({
                     </ul>
                 }
                 {headerMode === 'menu' &&
+                    // if menu is open show list of nav links
                     <ul
                         className="header-addition text-right"
                     >
