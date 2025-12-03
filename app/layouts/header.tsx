@@ -13,6 +13,7 @@ import {
 } from "react";
 import type { clientLoader } from "~/routes/search-players";
 
+import SporkballIcon from "~/images/sporkball.svg";
 import BaseballIcon from "~/images/baseball.svg";
 import SearchIcon from "~/images/search.svg";
 import MenuIcon from "~/images/menu.svg";
@@ -185,8 +186,8 @@ export default function HeaderLayout({
                         {/* home icon and title */}
                         <Link className="home-links" to="/">
                             <img
-                                src={BaseballIcon}
-                                alt="Baseball icon"
+                                src={SporkballIcon}
+                                alt="Sporkball icon"
                                 className="header-icon"
                             />
                             <span>SPORKBALL</span>

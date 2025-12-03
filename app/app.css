@@ -158,4 +158,33 @@ nav {
   font-weight: bold;
 }
 
+.player-page {
+  padding: 1rem 1.5rem;;
+}
+.bio-card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  grid-template-columns: auto 1fr;
+  background-color: rgb(95, 136, 95);
+  padding: .5rem;
+  border: 1px solid black;
+}
+
+.bio-card h1 {
+  margin: 0;
+  grid-row-start: 1;
+  grid-row-end: 2;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  text-align: center;
+}
+
+.player-icon {
+  width: 6rem;
+  grid-row-start: 2;
+  grid-row-end: 3;
+  grid-column-start: 1;
+  grid-column-end: 2;
+}
+
 

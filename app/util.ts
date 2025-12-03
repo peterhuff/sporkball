@@ -1,9 +1,29 @@
 
-export type PlayerId = {
+export interface PlayerId {
     fullName: string;
-    firstName?: string;
-    lastName?: string;
     id: number;
+}
+
+export interface Player extends PlayerId {
+    fullFMLName: string;
+    birthInfo: {
+        date: string;
+        city: string;
+        stateProvince?: string;
+        country: string;
+    }
+    height: string;
+    weight: number;
+    active: boolean;
+    currentTeam: {
+        id: number;
+        name: string;
+        parentOrgId?: number;
+    }
+    primaryPosition: string;
+    debutDate: string;
+    batSide: string;
+    throwHand: string;
 }
 
 // export async function getTop(): Promise<Array<PlayerId>> {
