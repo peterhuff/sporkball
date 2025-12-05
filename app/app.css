@@ -170,21 +170,52 @@ nav {
   border: 1px solid black;
 }
 
-.bio-card h1 {
-  margin: 0;
+.name-team {
   grid-row-start: 1;
   grid-row-end: 2;
   grid-column-start: 1;
   grid-column-end: 3;
   text-align: center;
+  padding-bottom: .5rem;
+}
+
+.bio-card h1,h2 {
+  margin: 0;
+}
+
+.bio-card h2 {
+  font-weight: normal;
+  font-size: 1.2rem;
 }
 
 .player-icon {
   width: 6rem;
+  border: 1px solid black;
   grid-row-start: 2;
   grid-row-end: 3;
   grid-column-start: 1;
   grid-column-end: 2;
+}
+
+.player-info {
+  padding: 0 .5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.info-line {
+  display: flex;
+  gap: 4px;
+}
+
+.player-info p {
+  margin: 0;
+  font-size: .9rem;
+}
+
+.info-header {
+  font-weight: bold;
 }
 
 
