@@ -11,7 +11,7 @@
       stroke-linecap: round;
       stroke-width: 4;
     }
-    <!-- @media (prefers-color-scheme: dark) {
+    @media (prefers-color-scheme: dark) {
       .ball {
         stroke: white;
         fill: #044f31;
@@ -19,7 +19,7 @@
       .stitches {
         stroke: white;
       }
-    } -->
+    }
   </style>
   <g transform="translate(38.5,33)">
     <g transform="rotate(-90)">

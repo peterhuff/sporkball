@@ -30,11 +30,42 @@ export default function Player({ loaderData }: Route.ComponentProps) {
         <div className="player-page">
             <title>{`${player.fullName} | Sporkball`}</title>
             <div className="bio-card">
-                <h1>{player.fullName}</h1>
+                <div className="name-team">
+                    <h1>{player.fullName}</h1>
+                    <h2>San Fransisco Giants</h2>
+                </div>
+                
                 <img
                     className="player-icon"
                     src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
                 />
+                <div className="player-info">
+                    <div className="info-line">
+                        <p className="info-header">Position:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">Bats:</p>
+                        <p>•</p>
+                        <p className="info-header">Throws:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">Height:</p>
+                        <p>•</p>
+                        <p className="info-header">Weight:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">Full Name:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">Birthdate:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">Birthplace:</p>
+                    </div>
+                    <div className="info-line">
+                        <p className="info-header">MLB Debut:</p>
+                    </div>
+                </div>
             </div>
         </div>
     );

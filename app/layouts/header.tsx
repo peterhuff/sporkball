@@ -14,7 +14,6 @@ import {
 import type { clientLoader } from "~/routes/search-players";
 
 import SporkballIcon from "~/images/sporkball.svg";
-import BaseballIcon from "~/images/baseball.svg";
 import SearchIcon from "~/images/search.svg";
 import MenuIcon from "~/images/menu.svg";
 import ExitIcon from "~/images/exit.svg";
