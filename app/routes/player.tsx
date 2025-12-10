@@ -1,6 +1,7 @@
 import type { Player } from "~/util";
 import { Position, mlbTeams } from "~/util";
 import type { Route } from "./+types/player";
+import { useNavigation } from "react-router";
 
 enum Month {
     January = 1,
@@ -25,6 +26,8 @@ export async function loader({ params }: Route.LoaderArgs) {
         .then((res) => res.json());
     const rawPlayer = response.people[0];
 
+    // console.log(rawPlayer);
+
     const player: Player = {
         fullName: rawPlayer.fullName,
         id: rawPlayer.id,
@@ -37,7 +40,6 @@ export async function loader({ params }: Route.LoaderArgs) {
         },
         height: rawPlayer.height,
         weight: rawPlayer.weight,
-        isActive: rawPlayer.rosterEntries[0].isActive,
         primaryPosition: codeToPosition(rawPlayer.primaryPosition.code),
         debutDate: rawPlayer.mlbDebutDate,
         batSide: rawPlayer.batSide.description,
@@ -58,7 +60,8 @@ export async function loader({ params }: Route.LoaderArgs) {
             }
             break;
         }
-        if ((entry.team.id >= 133 && entry.team.id <= 147) || (entry.team.id == 158) || (entry.team.parentOrgId >= 108 && entry.team.parentOrgId <= 121)) {
+
+        if ((entry.team.id >= 133 && entry.team.id <= 147) || (entry.team.id == 158) || (entry.team.id >= 108 && entry.team.id <= 121)) {
             if (entry.isActive) {
                 player.currentOrg = {
                     id: entry.team.id,
@@ -68,20 +71,24 @@ export async function loader({ params }: Route.LoaderArgs) {
             break;
         }
     }
-
+    // console.log(player);
     return { player };
 }
 
 export default function Player({ loaderData }: Route.ComponentProps) {
-    const { player } = loaderData
 
+    const { player } = loaderData
+    const navigation = useNavigation();
 
     return (
         <div className="player-page">
             <title>{`${player.fullName} | Sporkball`}</title>
-            <div 
-                className="bio-card" 
-                style={{ backgroundColor: player.currentOrg ? mlbTeams[player.currentOrg.id].color : "white" }}>
+            <div
+                className="bio-card"
+                style={{
+                    backgroundColor: player.currentOrg ? mlbTeams[player.currentOrg.id].color : "lightgray",
+                    color: player.currentOrg ? mlbTeams[player.currentOrg.id].fontColor : "black",
+                }}>
                 <div className="name-team">
                     <h1>{player.fullName}</h1>
                     {player.currentOrg ?
@@ -90,10 +97,16 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                     }
                 </div>
                 <div className="player-info">
-                    <img
-                        className="player-icon"
-                        src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
-                    />
+                    <div className="icon-wrapper">
+                        <div className="loading-splash-spinner" />
+                        {navigation.state === 'idle' &&
+                            <img
+                                className="player-icon"
+                                src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
+                                loading="lazy"
+                            />
+                        }
+                    </div>
                     <div className="info-line">
                         <p className="info-header">{`Position: ${Position[player.primaryPosition]}`}</p>
                     </div>
