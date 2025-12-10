@@ -158,23 +158,16 @@ nav {
   font-weight: bold;
 }
 
-.player-page {
-  padding: 1rem 1.5rem;;
-}
+/* .player-page {
+  background-color: lightgray;
+} */
+
 .bio-card {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: auto 1fr;
   background-color: rgb(95, 136, 95);
-  padding: .5rem;
-  border: 1px solid black;
+  padding: .5rem .5rem .75rem .5rem;
 }
 
 .name-team {
-  grid-row-start: 1;
-  grid-row-end: 2;
-  grid-column-start: 1;
-  grid-column-end: 3;
   text-align: center;
   padding-bottom: .5rem;
 }
@@ -191,20 +184,17 @@ nav {
 .player-icon {
   width: 6rem;
   border: 1px solid black;
-  grid-row-start: 2;
-  grid-row-end: 3;
-  grid-column-start: 1;
-  grid-column-end: 2;
+  float: right;
+  margin-bottom: .3rem;
+  margin-left: .3rem;
 }
 
 .player-info {
   padding: 0 .5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-around;
 }
 
 .info-line {
+  margin-top: .3rem;
   display: flex;
   gap: 4px;
 }
