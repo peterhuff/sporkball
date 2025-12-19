@@ -57,10 +57,13 @@ nav {
   align-items: center;
   height: 100%;
   gap: .25rem;
+  flex-grow: 1;
 }
 
 .search-button {
-  width: 4rem;
+  max-width: 5rem;
+  min-width: 4rem;
+  flex-grow: 1;
   height: 70%;
   display: flex;
   align-items: center;
@@ -187,7 +190,7 @@ nav {
   height: 9rem;
   float: right;
   margin-bottom: .3rem;
-  margin-left: .3rem;
+  margin-left: .5rem;
   border: 1px solid;
   background-color: gray;
   position: relative;
@@ -224,6 +227,7 @@ nav {
 
 .player-info {
   padding: 0 .5rem;
+  min-height: 9.5rem;
 }
 
 .info-line {
@@ -239,5 +243,40 @@ nav {
 
 .info-header {
   font-weight: bold;
+}
+
+.last-season {
+  overflow: scroll;
+}
+
+.playerTable {
+  table-layout: fixed;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.playerTable thead {
+  background-color: gray;
+  color: white;
+  cursor: pointer;
+}
+
+.playerTable th {
+  padding: 0 4px;
+  border: 1px solid black;
+}
+
+.playerTable td {
+  padding: 0 4px 0 8px;
+  border: 1px solid black;
+}
+
+.playerTable tbody {
+  text-align: right;
+}
+
+.playerTable .left-align {
+  text-align: left;
+  padding-left: 4px;
 }
 

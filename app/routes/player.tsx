@@ -2,6 +2,7 @@ import type { Player } from "~/util";
 import { Position, mlbTeams } from "~/util";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
+import { useState } from "react";
 
 enum Month {
     January = 1,
@@ -26,7 +27,13 @@ export async function loader({ params }: Route.LoaderArgs) {
         .then((res) => res.json());
     const rawPlayer = response.people[0];
 
-    // console.log(rawPlayer);
+
+    const statsUrl = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=yearByYear,career`;
+    const statsResponse = await fetch(statsUrl)
+        .then((res) => res.json());
+    const stats = statsResponse.stats;
+
+
 
     const player: Player = {
         fullName: rawPlayer.fullName,
@@ -72,13 +79,23 @@ export async function loader({ params }: Route.LoaderArgs) {
         }
     }
     // console.log(player);
-    return { player };
+    return { player, stats };
 }
 
 export default function Player({ loaderData }: Route.ComponentProps) {
 
-    const { player } = loaderData
+    const { player, stats } = loaderData
     const navigation = useNavigation();
+    const [showSpinner, setShowSpinner] = useState(true);
+    const [prevId, setPrevId] = useState(player.id);
+
+    if (player.id !== prevId) {
+        setPrevId(player.id);
+        setShowSpinner(true);
+    }
+
+    const yearList = stats[0]?.splits;
+    const lastYear = yearList[yearList.length-1];
 
     return (
         <div className="player-page">
@@ -98,13 +115,19 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 </div>
                 <div className="player-info">
                     <div className="icon-wrapper">
-                        <div className="loading-splash-spinner" />
+
                         {navigation.state === 'idle' &&
                             <img
                                 className="player-icon"
                                 src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
                                 loading="lazy"
+                                onLoad={() => setShowSpinner(false)}
+                                key={player.id}
+                                alt={player.fullName + " icon"}
                             />
+                        }
+                        {showSpinner &&
+                            <div className="loading-splash-spinner" />
                         }
                     </div>
                     <div className="info-line">
@@ -120,12 +143,11 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         <p>•</p>
                         <p className="info-header">{`Weight: ${player.weight}`}</p>
                     </div>
-                    <div className="info-line">
-                        <p className="info-header">{`MLB Debut: ${parseDate(player.debutDate)}`}</p>
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Birthdate: ${parseDate(player.birthInfo.date)}`}</p>
-                    </div>
+                    {player.debutDate &&
+                        <div className="info-line">
+                            <p className="info-header">{`MLB Debut: ${parseDate(player.debutDate)}`}</p>
+                        </div>
+                    }
                     <div className="info-line">
                         <p className="info-header">
                             {"Birthplace: " + player.birthInfo.city + ", "}
@@ -134,10 +156,56 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         </p>
                     </div>
                     <div className="info-line">
+                        <p className="info-header">{`Birthdate: ${parseDate(player.birthInfo.date)}`}</p>
+                    </div>
+                    <div className="info-line">
                         <p className="info-header">{`Full Name: ${player.fullFMLName}`}</p>
                     </div>
                 </div>
             </div>
+
+            {yearList &&
+                <div className="last-season">
+                    <h2>2025</h2>
+                    <table className="playerTable">
+                        <thead>
+                            <tr>
+                                <th scope="col">Team</th>
+                                <th scope="col">G</th>
+                                <th scope="col">PA</th>
+                                <th scope="col">R</th>
+                                <th scope="col">RBI</th>
+                                <th scope="col">H</th>
+                                <th scope="col">HR</th>
+                                <th scope="col">BB</th>
+                                <th scope="col">SB</th>
+                                <th scope="col">AVG</th>
+                                <th scope="col">OBP</th>
+                                <th scope="col">SLG</th>
+                                <th scope="col">OPS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                    <td className="left-align">{lastYear.team.id}</td>
+                                    <td>{lastYear.stat.gamesPlayed}</td>
+                                    <td>{lastYear.stat.plateAppearances}</td>
+                                    <td>{lastYear.stat.runs}</td>
+                                    <td>{lastYear.stat.rbi}</td>
+                                    <td>{lastYear.stat.hits}</td>
+                                    <td>{lastYear.stat.homeRuns}</td>
+                                    <td>{lastYear.stat.baseOnBalls}</td>
+                                    <td>{lastYear.stat.stolenBases}</td>
+                                    <td>{lastYear.stat.avg}</td>
+                                    <td>{lastYear.stat.obp}</td>
+                                    <td>{lastYear.stat.slg}</td>
+                                    <td>{lastYear.stat.ops}</td>
+                                </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+
         </div>
     );
 }

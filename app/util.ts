@@ -19,7 +19,7 @@ export interface Player extends PlayerId {
         name: string;
     }
     primaryPosition: number;
-    debutDate: string;
+    debutDate?: string;
     batSide: string;
     throwHand: string;
 }

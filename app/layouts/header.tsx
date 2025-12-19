@@ -52,6 +52,7 @@ export default function HeaderLayout({
     const [headerMode, setHeaderMode] = useState<HeaderMode>('none');
     const [searchValue, setSearchValue] = useState("");
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout | null>(null); // delay timer for searchbar
+    
 
     // ref to header allows click event handler to check if click was outside
     const comboRef = useRef<HTMLElement>(null);
