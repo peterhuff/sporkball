@@ -255,7 +255,7 @@ export const mlbTeams = {
         name: "Baltimore Orioles",
         abbreviation: "BAL",
         color: "#DF4601",
-        fontColor: "black",
+        fontColor: "white",
     },
     111: {
         name: "Boston Red Sox",
