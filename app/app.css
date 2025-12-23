@@ -162,10 +162,6 @@ nav {
   font-weight: bold;
 }
 
-/* .player-page {
-  background-color: lightgray;
-} */
-
 .bio-card {
   border-top: 1px solid rgb(163, 163, 163);
   padding: .5rem .5rem .75rem .5rem;
@@ -245,33 +241,37 @@ nav {
   font-weight: bold;
 }
 
-.last-season {
+.player-content {
+  margin: .5rem .5rem;
+}
+
+.table-wrapper {
   overflow: scroll;
 }
 
-.playerTable {
+.player-table {
   table-layout: fixed;
   margin: 0 auto;
   border-collapse: collapse;
 }
 
-.playerTable thead {
+.player-table thead {
   background-color: gray;
   color: white;
   cursor: pointer;
 }
 
-.playerTable th {
+.player-table th {
   padding: 0 4px;
   border: 1px solid black;
 }
 
-.playerTable td {
+.player-table td {
   padding: 0 4px 0 8px;
   border: 1px solid black;
 }
 
-.playerTable tbody {
+.player-table tbody {
   text-align: right;
 }
 
@@ -279,4 +279,6 @@ nav {
   text-align: left;
   padding-left: 4px;
 }
+
+
 

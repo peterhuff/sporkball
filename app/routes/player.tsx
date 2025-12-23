@@ -95,7 +95,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     }
 
     const yearList = stats[0]?.splits;
-    const lastYear = yearList[yearList.length-1];
+    const lastYear = yearList[yearList.length - 1];
 
     return (
         <div className="player-page">
@@ -163,48 +163,47 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                     </div>
                 </div>
             </div>
+            <div className="player-content">
+                {yearList &&
+                    <div className="last-season">
+                        <h2>2025</h2>
+                        <div className="table-wrapper">
+                            <table className="player-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">G</th>
+                                        <th scope="col">PA</th>
+                                        <th scope="col">R</th>
+                                        <th scope="col">RBI</th>
+                                        <th scope="col">H</th>
+                                        <th scope="col">HR</th>
+                                        <th scope="col">AVG</th>
+                                        <th scope="col">OBP</th>
+                                        <th scope="col">SLG</th>
+                                        <th scope="col">OPS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{lastYear.stat.gamesPlayed}</td>
+                                        <td>{lastYear.stat.plateAppearances}</td>
+                                        <td>{lastYear.stat.runs}</td>
+                                        <td>{lastYear.stat.rbi}</td>
+                                        <td>{lastYear.stat.hits}</td>
+                                        <td>{lastYear.stat.homeRuns}</td>
+                                        <td>{lastYear.stat.avg}</td>
+                                        <td>{lastYear.stat.obp}</td>
+                                        <td>{lastYear.stat.slg}</td>
+                                        <td>{lastYear.stat.ops}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+            </div>
 
-            {yearList &&
-                <div className="last-season">
-                    <h2>2025</h2>
-                    <table className="playerTable">
-                        <thead>
-                            <tr>
-                                <th scope="col">Team</th>
-                                <th scope="col">G</th>
-                                <th scope="col">PA</th>
-                                <th scope="col">R</th>
-                                <th scope="col">RBI</th>
-                                <th scope="col">H</th>
-                                <th scope="col">HR</th>
-                                <th scope="col">BB</th>
-                                <th scope="col">SB</th>
-                                <th scope="col">AVG</th>
-                                <th scope="col">OBP</th>
-                                <th scope="col">SLG</th>
-                                <th scope="col">OPS</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                    <td className="left-align">{lastYear.team.id}</td>
-                                    <td>{lastYear.stat.gamesPlayed}</td>
-                                    <td>{lastYear.stat.plateAppearances}</td>
-                                    <td>{lastYear.stat.runs}</td>
-                                    <td>{lastYear.stat.rbi}</td>
-                                    <td>{lastYear.stat.hits}</td>
-                                    <td>{lastYear.stat.homeRuns}</td>
-                                    <td>{lastYear.stat.baseOnBalls}</td>
-                                    <td>{lastYear.stat.stolenBases}</td>
-                                    <td>{lastYear.stat.avg}</td>
-                                    <td>{lastYear.stat.obp}</td>
-                                    <td>{lastYear.stat.slg}</td>
-                                    <td>{lastYear.stat.ops}</td>
-                                </tr>
-                        </tbody>
-                    </table>
-                </div>
-            }
+
 
         </div>
     );

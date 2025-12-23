@@ -106,7 +106,7 @@ export const mlbTeams = {
         name: "Philadelphia Phillies",
         abbreviation: "PHI",
         color: "#E81828",
-        fontColor: "black",
+        fontColor: "white",
     },
     144: {
         name: "Atlanta Braves",
