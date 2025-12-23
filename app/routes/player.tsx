@@ -1,5 +1,5 @@
 import type { Player } from "~/util";
-import { Position, mlbTeams } from "~/util";
+import { Position, mlbTeams, getSplits } from "~/util";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
 import { useState } from "react";
@@ -31,9 +31,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     const statsUrl = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=yearByYear,career`;
     const statsResponse = await fetch(statsUrl)
         .then((res) => res.json());
-    const stats = statsResponse.stats;
-
-
+    const stats = getSplits(statsResponse.stats);
 
     const player: Player = {
         fullName: rawPlayer.fullName,
@@ -84,7 +82,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 
 export default function Player({ loaderData }: Route.ComponentProps) {
 
-    const { player, stats } = loaderData
+    const { player, stats } = loaderData;
+    const { careerStats, yearStats } = stats;
     const navigation = useNavigation();
     const [showSpinner, setShowSpinner] = useState(true);
     const [prevId, setPrevId] = useState(player.id);
@@ -94,8 +93,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
         setShowSpinner(true);
     }
 
-    const yearList = stats[0]?.splits;
-    const lastYear = yearList[yearList.length - 1];
+    const lastYear = yearStats[yearStats.length - 1];
 
     return (
         <div className="player-page">
@@ -164,9 +162,9 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 </div>
             </div>
             <div className="player-content">
-                {yearList &&
+                {yearStats &&
                     <div className="last-season">
-                        <h2>2025</h2>
+                        <h2>{lastYear.season}</h2>
                         <div className="table-wrapper">
                             <table className="player-table">
                                 <thead>
@@ -185,16 +183,16 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{lastYear.stat.gamesPlayed}</td>
-                                        <td>{lastYear.stat.plateAppearances}</td>
-                                        <td>{lastYear.stat.runs}</td>
-                                        <td>{lastYear.stat.rbi}</td>
-                                        <td>{lastYear.stat.hits}</td>
-                                        <td>{lastYear.stat.homeRuns}</td>
-                                        <td>{lastYear.stat.avg}</td>
-                                        <td>{lastYear.stat.obp}</td>
-                                        <td>{lastYear.stat.slg}</td>
-                                        <td>{lastYear.stat.ops}</td>
+                                        <td>{lastYear.gamesPlayed}</td>
+                                        <td>{lastYear.plateAppearances}</td>
+                                        <td>{lastYear.runs}</td>
+                                        <td>{lastYear.rbi}</td>
+                                        <td>{lastYear.hits}</td>
+                                        <td>{lastYear.homeRuns}</td>
+                                        <td>{lastYear.avg}</td>
+                                        <td>{lastYear.obp}</td>
+                                        <td>{lastYear.slg}</td>
+                                        <td>{lastYear.ops}</td>
                                     </tr>
                                 </tbody>
                             </table>

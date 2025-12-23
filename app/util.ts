@@ -24,6 +24,107 @@ export interface Player extends PlayerId {
     throwHand: string;
 }
 
+export type HittingSplit = {
+    season?: number;
+    age?: number;
+    gamesPlayed: number;
+    runs: number;
+    doubles: number;
+    triples: number;
+    homeRuns: number;
+    strikeOuts: number;
+    baseOnBalls: number;
+    IBB: number;
+    hits: number;
+    hitByPitch: number;
+    avg: number;
+    atBats: number;
+    obp: number;
+    slg: number;
+    ops: number;
+    caughtStealing: number;
+    stolenBases: number;
+    GIDP: number;
+    pitchesSeen: number;
+    plateAppearances: number;
+    totalBases: number;
+    rbi: number;
+    sacBunts: number;
+    sacFlies: number;
+    babip: number;
+    team?: TeamCode;
+    oneTeam: boolean;
+}
+
+export function getSplits(results: any) {
+    const careerResults = results[1].splits[0].stat;
+    const careerStats: HittingSplit = {
+        gamesPlayed: careerResults.gamesPlayed,
+        runs: careerResults.runs,
+        doubles: careerResults.doubles,
+        triples: careerResults.triples,
+        homeRuns: careerResults.homeRuns,
+        strikeOuts: careerResults.strikeOuts,
+        baseOnBalls: careerResults.baseOnBalls,
+        IBB: careerResults.intentionalWalks,
+        hits: careerResults.hits,
+        hitByPitch: careerResults.hitByPitch,
+        avg: Number(careerResults.avg),
+        atBats: careerResults.atBats,
+        obp: Number(careerResults.obp),
+        slg: Number(careerResults.slg),
+        ops: Number(careerResults.ops),
+        caughtStealing: careerResults.caughtStealing,
+        stolenBases: careerResults.stolenBases,
+        GIDP: careerResults.groundIntoDoublePlay,
+        pitchesSeen: careerResults.numberOfPitches,
+        plateAppearances: careerResults.plateAppearances,
+        totalBases: careerResults.totalBases,
+        rbi: careerResults.rbi,
+        sacBunts: careerResults.sacBunts,
+        sacFlies: careerResults.sacFlies,
+        babip: careerResults.babip,
+        team: careerResults.team ? careerResults.team.id : undefined,
+        oneTeam: careerResults.numTeams ? false : true,
+    }
+    const yearResults = results[0].splits;
+    const yearStats: Array<HittingSplit> = yearResults.map((year: any) => {
+        const stats = year.stat;
+        const yearSplit: HittingSplit = {
+            season: year.season,
+            gamesPlayed: stats.gamesPlayed,
+            runs: stats.runs,
+            doubles: stats.doubles,
+            triples: stats.triples,
+            homeRuns: stats.homeRuns,
+            strikeOuts: stats.strikeOuts,
+            baseOnBalls: stats.baseOnBalls,
+            IBB: stats.intentionalWalks,
+            hits: stats.hits,
+            hitByPitch: stats.hitByPitch,
+            avg: Number(stats.avg),
+            atBats: stats.atBats,
+            obp: Number(stats.obp),
+            slg: Number(stats.slg),
+            ops: Number(stats.ops),
+            caughtStealing: stats.caughtStealing,
+            stolenBases: stats.stolenBases,
+            GIDP: stats.groundIntoDoublePlay,
+            pitchesSeen: stats.numberOfPitches,
+            plateAppearances: stats.plateAppearances,
+            totalBases: stats.totalBases,
+            rbi: stats.rbi,
+            sacBunts: stats.sacBunts,
+            sacFlies: stats.sacFlies,
+            babip: stats.babip,
+            team: stats.team ? stats.team.id : undefined,
+            oneTeam: stats.numTeams ? false : true,
+        }
+        return yearSplit;
+    });
+    return { careerStats, yearStats };
+}
+
 export enum Position {
     Pitcher = 1,
     Catcher,
