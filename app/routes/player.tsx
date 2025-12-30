@@ -1,4 +1,4 @@
-import type { Player } from "~/util";
+import type { Player, YearSplit } from "~/util";
 import { Position, mlbTeams, getSplits } from "~/util";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
@@ -18,6 +18,8 @@ enum Month {
     November,
     December,
 }
+
+type SortMethod = { field: keyof YearSplit, asc: boolean };
 
 export async function loader({ params }: Route.LoaderArgs) {
     const { playerId } = params;
@@ -76,7 +78,6 @@ export async function loader({ params }: Route.LoaderArgs) {
             break;
         }
     }
-    // console.log(player);
     return { player, stats };
 }
 
@@ -86,6 +87,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     const { careerStats, yearStats } = stats;
     const navigation = useNavigation();
     const [showSpinner, setShowSpinner] = useState(true);
+    const [sortType, setSortType] = useState<SortMethod>({ field: "season", asc: true });
     const [prevId, setPrevId] = useState(player.id);
 
     if (player.id !== prevId) {
@@ -94,6 +96,20 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     }
 
     const lastYear = yearStats[yearStats.length - 1];
+
+    const filteredStats = yearStats.filter((row) => !row.partialYear);
+    const tableStats = sortRows(filteredStats, sortType);
+
+    const handleSort = (field: keyof YearSplit) => {
+        const newMethod: SortMethod = { field: field, asc: false }
+        if (sortType.field == field) {
+            newMethod.asc = !sortType.asc;
+        }
+        else if (field == "season" || field == "age") {
+            newMethod.asc = true;
+        }
+        setSortType(newMethod);
+    }
 
     return (
         <div className="player-page">
@@ -106,9 +122,8 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 }}>
                 <div className="name-team">
                     <h1>{player.fullName}</h1>
-                    {player.currentOrg ?
+                    {player.currentOrg &&
                         <h2>{player.currentOrg.name}</h2>
-                        : null
                     }
                 </div>
                 <div className="player-info">
@@ -189,10 +204,70 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                         <td>{lastYear.rbi}</td>
                                         <td>{lastYear.hits}</td>
                                         <td>{lastYear.homeRuns}</td>
-                                        <td>{lastYear.avg}</td>
-                                        <td>{lastYear.obp}</td>
-                                        <td>{lastYear.slg}</td>
-                                        <td>{lastYear.ops}</td>
+                                        <td>{statString(lastYear.avg)}</td>
+                                        <td>{statString(lastYear.obp)}</td>
+                                        <td>{statString(lastYear.slg)}</td>
+                                        <td>{statString(lastYear.ops)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                {yearStats &&
+                    <div className="year-stats">
+                        <h2>Batting</h2>
+                        <div className="table-wrapper">
+                            <table className="player-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" onClick={() => handleSort("season")}>Year</th>
+                                        <th scope="col" onClick={() => handleSort("age")}>Age</th>
+                                        <th scope="col" onClick={() => handleSort("team")}>Team</th>
+                                        <th scope="col" onClick={() => handleSort("gamesPlayed")}>G</th>
+                                        <th scope="col" onClick={() => handleSort("plateAppearances")}>PA</th>
+                                        <th scope="col" onClick={() => handleSort("runs")}>R</th>
+                                        <th scope="col" onClick={() => handleSort("rbi")}>RBI</th>
+                                        <th scope="col" onClick={() => handleSort("hits")}>H</th>
+                                        <th scope="col" onClick={() => handleSort("homeRuns")}>HR</th>
+                                        <th scope="col" onClick={() => handleSort("avg")}>AVG</th>
+                                        <th scope="col" onClick={() => handleSort("obp")}>OBP</th>
+                                        <th scope="col" onClick={() => handleSort("slg")}>SLG</th>
+                                        <th scope="col" onClick={() => handleSort("ops")}>OPS</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {tableStats.map((row) => (
+                                        <tr key={row.season}>
+                                            <td>{row.season}</td>
+                                            <td>{row.age}</td>
+                                            <td>{row.team ? mlbTeams[row.team].abbreviation : row.numTeams + "TM"}</td>
+                                            <td>{row.gamesPlayed}</td>
+                                            <td>{row.plateAppearances}</td>
+                                            <td>{row.runs}</td>
+                                            <td>{row.rbi}</td>
+                                            <td>{row.hits}</td>
+                                            <td>{row.homeRuns}</td>
+                                            <td>{statString(row.avg)}</td>
+                                            <td>{statString(row.obp)}</td>
+                                            <td>{statString(row.slg)}</td>
+                                            <td>{statString(row.ops)}</td>
+                                        </tr>
+                                    ))}
+                                    <tr className="career-stats">
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td>{careerStats.team ? mlbTeams[careerStats.team].abbreviation : "---"}</td>
+                                        <td>{careerStats.gamesPlayed}</td>
+                                        <td>{careerStats.plateAppearances}</td>
+                                        <td>{careerStats.runs}</td>
+                                        <td>{careerStats.rbi}</td>
+                                        <td>{careerStats.hits}</td>
+                                        <td>{careerStats.homeRuns}</td>
+                                        <td>{statString(careerStats.avg)}</td>
+                                        <td>{statString(careerStats.obp)}</td>
+                                        <td>{statString(careerStats.slg)}</td>
+                                        <td>{statString(careerStats.ops)}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -200,9 +275,6 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                     </div>
                 }
             </div>
-
-
-
         </div>
     );
 }
@@ -227,4 +299,35 @@ const parseDate = (date: string) => {
     return newDate;
 };
 
+const statString = (num: number) => num.toFixed(3).replace(/0\./, '.');
 
+const sortRows = (splits: Array<YearSplit>, { field, asc }: SortMethod) => {
+    // const mapped = splits.map((row, i) => ({ i, value: row[field] }));
+    const mapped = splits.map((row, i) => {
+        if (field == "team" && row.team) {
+            return { i, value: mlbTeams[row.team].abbreviation };
+        }
+        return { i, value: row[field] };
+    });
+    mapped.sort((a, b) => {
+        if (a.value && b.value) {
+            if (field == "team") {
+                if (a.value > b.value) {
+                    return asc ? 1 : -1;
+                }
+                if (a.value < b.value) {
+                    return asc ? -1 : 1;
+                }
+            }
+            if (a.value > b.value) {
+                return asc ? 1 : -1;
+            }
+            if (a.value < b.value) {
+                return asc ? -1 : 1;
+            }
+        }
+        return 0;
+    });
+    const sorted = mapped.map((v) => splits[v.i]);
+    return sorted;
+}

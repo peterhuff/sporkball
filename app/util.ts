@@ -24,9 +24,7 @@ export interface Player extends PlayerId {
     throwHand: string;
 }
 
-export type HittingSplit = {
-    season?: number;
-    age?: number;
+interface HittingSplit {
     gamesPlayed: number;
     runs: number;
     doubles: number;
@@ -53,11 +51,18 @@ export type HittingSplit = {
     sacFlies: number;
     babip: number;
     team?: TeamCode;
-    oneTeam: boolean;
+}
+
+export interface YearSplit extends HittingSplit {
+    season: number;
+    age: number;
+    numTeams: number;
+    partialYear: boolean;
 }
 
 export function getSplits(results: any) {
     const careerResults = results[1].splits[0].stat;
+    const careerTeam = results[1].splits[0].team;
     const careerStats: HittingSplit = {
         gamesPlayed: careerResults.gamesPlayed,
         runs: careerResults.runs,
@@ -84,14 +89,19 @@ export function getSplits(results: any) {
         sacBunts: careerResults.sacBunts,
         sacFlies: careerResults.sacFlies,
         babip: careerResults.babip,
-        team: careerResults.team ? careerResults.team.id : undefined,
-        oneTeam: careerResults.numTeams ? false : true,
+        team: careerTeam?.id ?? undefined,
     }
     const yearResults = results[0].splits;
-    const yearStats: Array<HittingSplit> = yearResults.map((year: any) => {
+    const multiYears: Array<number> = [];
+    let prevAge: number;
+    const yearStats: Array<YearSplit> = yearResults.map((year: any) => {
         const stats = year.stat;
-        const yearSplit: HittingSplit = {
+        if (stats.age) {
+            prevAge = stats.age;
+        }
+        const yearSplit: YearSplit = {
             season: year.season,
+            age: stats.age ?? prevAge,
             gamesPlayed: stats.gamesPlayed,
             runs: stats.runs,
             doubles: stats.doubles,
@@ -117,11 +127,21 @@ export function getSplits(results: any) {
             sacBunts: stats.sacBunts,
             sacFlies: stats.sacFlies,
             babip: stats.babip,
-            team: stats.team ? stats.team.id : undefined,
-            oneTeam: stats.numTeams ? false : true,
+            team: year.team?.id ?? undefined,
+            numTeams: 1,
+            partialYear: false,
+        }
+        if (year.numTeams) {
+            yearSplit.numTeams = year.numTeams;
+            multiYears.push(year.season);
         }
         return yearSplit;
     });
+    yearStats.forEach(row => {
+        if (multiYears.includes(row.season) && row.numTeams === 1) {
+            row.partialYear = true;
+        }
+    })
     return { careerStats, yearStats };
 }
 
