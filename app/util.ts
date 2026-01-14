@@ -24,6 +24,46 @@ export interface Player extends PlayerId {
     throwHand: string;
 }
 
+type SplitObject = {
+    careerHitting?: CareerHitting;
+    yearHitting?: YearByYearHitting;
+    careerPitching?: CareerPitching;
+    yearPitching?: YearByYearPitching;
+}
+
+type Split = CareerHitting | YearByYearHitting | CareerPitching | YearByYearPitching;
+
+interface CareerHitting {
+    type: "career";
+    group: "hitting";
+    stats: HittingSplit;
+}
+
+interface YearByYearHitting {
+    type: "yearByYear";
+    group: "hitting";
+    stats: Array<YearHitting>;
+}
+
+interface CareerPitching {
+    type: "career";
+    group: "pitching";
+    stats: PitchingSplit;
+}
+
+interface YearByYearPitching {
+    type: "yearByYear";
+    group: "pitching";
+    stats: Array<YearPitching>;
+}
+
+interface YearData {
+    season: number;
+    age: number;
+    numTeams: number;
+    partialYear: boolean;
+}
+
 interface HittingSplit {
     gamesPlayed: number;
     runs: number;
@@ -32,7 +72,7 @@ interface HittingSplit {
     homeRuns: number;
     strikeOuts: number;
     baseOnBalls: number;
-    IBB: number;
+    ibb: number;
     hits: number;
     hitByPitch: number;
     avg: number;
@@ -42,7 +82,7 @@ interface HittingSplit {
     ops: number;
     caughtStealing: number;
     stolenBases: number;
-    GIDP: number;
+    gidp: number;
     pitchesSeen: number;
     plateAppearances: number;
     totalBases: number;
@@ -53,96 +93,233 @@ interface HittingSplit {
     team?: TeamCode;
 }
 
-export interface YearSplit extends HittingSplit {
-    season: number;
-    age: number;
-    numTeams: number;
-    partialYear: boolean;
+export type YearHitting = HittingSplit & YearData;
+
+interface PitchingSplit {
+    gamesPlayed: number;
+    gamesStarted: number;
+    runs: number;
+    homeRuns: number;
+    strikeOuts: number;
+    baseOnBalls: number;
+    hits: number;
+    hitByPitch: number;
+    era: number;
+    inningsPitched: string;
+    wins: number;
+    losses: number;
+    saves: number;
+    earnedRuns: number;
+    whip: number;
+    battersFaced: number;
+    winPercentage: number;
+    kbbRatio: number;
+    soPer9: number;
+    bbPer9: number;
+    hitsPer9: number;
+    hrPer9: number;
+    team?: TeamCode;
 }
 
+type YearPitching = PitchingSplit & YearData;
+
 export function getSplits(results: any) {
-    const careerResults = results[1].splits[0].stat;
-    const careerTeam = results[1].splits[0].team;
-    const careerStats: HittingSplit = {
-        gamesPlayed: careerResults.gamesPlayed,
-        runs: careerResults.runs,
-        doubles: careerResults.doubles,
-        triples: careerResults.triples,
-        homeRuns: careerResults.homeRuns,
-        strikeOuts: careerResults.strikeOuts,
-        baseOnBalls: careerResults.baseOnBalls,
-        IBB: careerResults.intentionalWalks,
-        hits: careerResults.hits,
-        hitByPitch: careerResults.hitByPitch,
-        avg: Number(careerResults.avg),
-        atBats: careerResults.atBats,
-        obp: Number(careerResults.obp),
-        slg: Number(careerResults.slg),
-        ops: Number(careerResults.ops),
-        caughtStealing: careerResults.caughtStealing,
-        stolenBases: careerResults.stolenBases,
-        GIDP: careerResults.groundIntoDoublePlay,
-        pitchesSeen: careerResults.numberOfPitches,
-        plateAppearances: careerResults.plateAppearances,
-        totalBases: careerResults.totalBases,
-        rbi: careerResults.rbi,
-        sacBunts: careerResults.sacBunts,
-        sacFlies: careerResults.sacFlies,
-        babip: careerResults.babip,
-        team: careerTeam?.id ?? undefined,
-    }
-    const yearResults = results[0].splits;
-    const multiYears: Array<number> = [];
-    let prevAge: number;
-    const yearStats: Array<YearSplit> = yearResults.map((year: any) => {
-        const stats = year.stat;
-        if (stats.age) {
-            prevAge = stats.age;
-        }
-        const yearSplit: YearSplit = {
-            season: year.season,
-            age: stats.age ?? prevAge,
-            gamesPlayed: stats.gamesPlayed,
-            runs: stats.runs,
-            doubles: stats.doubles,
-            triples: stats.triples,
-            homeRuns: stats.homeRuns,
-            strikeOuts: stats.strikeOuts,
-            baseOnBalls: stats.baseOnBalls,
-            IBB: stats.intentionalWalks,
-            hits: stats.hits,
-            hitByPitch: stats.hitByPitch,
-            avg: Number(stats.avg),
-            atBats: stats.atBats,
-            obp: Number(stats.obp),
-            slg: Number(stats.slg),
-            ops: Number(stats.ops),
-            caughtStealing: stats.caughtStealing,
-            stolenBases: stats.stolenBases,
-            GIDP: stats.groundIntoDoublePlay,
-            pitchesSeen: stats.numberOfPitches,
-            plateAppearances: stats.plateAppearances,
-            totalBases: stats.totalBases,
-            rbi: stats.rbi,
-            sacBunts: stats.sacBunts,
-            sacFlies: stats.sacFlies,
-            babip: stats.babip,
-            team: year.team?.id ?? undefined,
-            numTeams: 1,
-            partialYear: false,
-        }
-        if (year.numTeams) {
-            yearSplit.numTeams = year.numTeams;
-            multiYears.push(year.season);
-        }
-        return yearSplit;
-    });
-    yearStats.forEach(row => {
-        if (multiYears.includes(row.season) && row.numTeams === 1) {
-            row.partialYear = true;
+    const splits: Array<Split> = results.map((result: any) => {
+        if (result.group.displayName === "hitting") {
+            if (result.type.displayName === "career") {
+                const careerResults = result.splits[0].stat;
+                const careerStats: HittingSplit = {
+                    gamesPlayed: careerResults.gamesPlayed,
+                    runs: careerResults.runs,
+                    doubles: careerResults.doubles,
+                    triples: careerResults.triples,
+                    homeRuns: careerResults.homeRuns,
+                    strikeOuts: careerResults.strikeOuts,
+                    baseOnBalls: careerResults.baseOnBalls,
+                    ibb: careerResults.intentionalWalks,
+                    hits: careerResults.hits,
+                    hitByPitch: careerResults.hitByPitch,
+                    avg: Number(careerResults.avg),
+                    atBats: careerResults.atBats,
+                    obp: Number(careerResults.obp),
+                    slg: Number(careerResults.slg),
+                    ops: Number(careerResults.ops),
+                    caughtStealing: careerResults.caughtStealing,
+                    stolenBases: careerResults.stolenBases,
+                    gidp: careerResults.groundIntoDoublePlay,
+                    pitchesSeen: careerResults.numberOfPitches,
+                    plateAppearances: careerResults.plateAppearances,
+                    totalBases: careerResults.totalBases,
+                    rbi: careerResults.rbi,
+                    sacBunts: careerResults.sacBunts,
+                    sacFlies: careerResults.sacFlies,
+                    babip: careerResults.babip,
+                    team: result.splits[0].team?.id,
+                }
+                const careerSplit: CareerHitting = {
+                    stats: careerStats,
+                    type: "career",
+                    group: "hitting",
+                }
+                return careerSplit;
+            } else {
+                const yearResults = result.splits;
+                const multiYears: Array<number> = [];
+                let prevAge: number;
+                const yearStats: Array<YearHitting> = yearResults.map((year: any) => {
+                    const stats = year.stat;
+                    if (stats.age) {
+                        prevAge = stats.age;
+                    }
+                    const yearSplit: YearHitting = {
+                        season: year.season,
+                        age: stats.age ?? prevAge,
+                        gamesPlayed: stats.gamesPlayed,
+                        runs: stats.runs,
+                        doubles: stats.doubles,
+                        triples: stats.triples,
+                        homeRuns: stats.homeRuns,
+                        strikeOuts: stats.strikeOuts,
+                        baseOnBalls: stats.baseOnBalls,
+                        ibb: stats.intentionalWalks,
+                        hits: stats.hits,
+                        hitByPitch: stats.hitByPitch,
+                        avg: Number(stats.avg),
+                        atBats: stats.atBats,
+                        obp: Number(stats.obp),
+                        slg: Number(stats.slg),
+                        ops: Number(stats.ops),
+                        caughtStealing: stats.caughtStealing,
+                        stolenBases: stats.stolenBases,
+                        gidp: stats.groundIntoDoublePlay,
+                        pitchesSeen: stats.numberOfPitches,
+                        plateAppearances: stats.plateAppearances,
+                        totalBases: stats.totalBases,
+                        rbi: stats.rbi,
+                        sacBunts: stats.sacBunts,
+                        sacFlies: stats.sacFlies,
+                        babip: stats.babip,
+                        team: year.team?.id,
+                        numTeams: 1,
+                        partialYear: false,
+                    }
+                    if (year.numTeams) {
+                        yearSplit.numTeams = year.numTeams;
+                        multiYears.push(year.season);
+                    }
+                    return yearSplit;
+                });
+                yearStats.forEach(row => {
+                    if (multiYears.includes(row.season) && row.numTeams === 1) {
+                        row.partialYear = true;
+                    }
+                });
+                const yearByYearHitting: YearByYearHitting = {
+                    type: "yearByYear",
+                    group: "hitting",
+                    stats: yearStats,
+                }
+                return yearByYearHitting;
+            }
+        } else if (result.group.displayName === "pitching") {
+            if (result.type.displayName === "career") {
+                const careerResults = result.splits[0].stat;
+                const careerStats: PitchingSplit = {
+                    gamesPlayed: careerResults.gamesPlayed,
+                    runs: careerResults.runs,
+                    homeRuns: careerResults.homeRuns,
+                    strikeOuts: careerResults.strikeOuts,
+                    baseOnBalls: careerResults.baseOnBalls,
+                    hits: careerResults.hits,
+                    hitByPitch: careerResults.hitByPitch,
+                    gamesStarted: careerResults.gamesStarted,
+                    era: Number(careerResults.era),
+                    inningsPitched: careerResults.inningsPitched,
+                    wins: careerResults.wins,
+                    losses: careerResults.losses,
+                    saves: careerResults.saves,
+                    earnedRuns: careerResults.earnedRuns,
+                    whip: Number(careerResults.whip),
+                    battersFaced: careerResults.battersFaced,
+                    winPercentage: Number(careerResults.winPercentage),
+                    kbbRatio: Number(careerResults.strikeoutWalkRatio),
+                    soPer9: Number(careerResults.strikeoutsPer9Inn),
+                    bbPer9: Number(careerResults.walksPer9Inn),
+                    hitsPer9: Number(careerResults.hitsPer9Inn),
+                    hrPer9: Number(careerResults.homeRunsPer9),
+                    team: result.splits[0].team?.id,
+                }
+                const careerSplit: CareerPitching = {
+                    stats: careerStats,
+                    type: "career",
+                    group: "pitching",
+                }
+                return careerSplit;
+            } else {
+                const yearResults = result.splits;
+                const multiYears: Array<number> = [];
+                let prevAge: number;
+                const yearStats: Array<YearPitching> = yearResults.map((year: any) => {
+                    const stats = year.stat;
+                    if (stats.age) {
+                        prevAge = stats.age;
+                    }
+                    const yearSplit: YearPitching = {
+                        season: year.season,
+                        age: stats.age ?? prevAge,
+                        gamesPlayed: stats.gamesPlayed,
+                        runs: stats.runs,
+                        homeRuns: stats.homeRuns,
+                        strikeOuts: stats.strikeOuts,
+                        baseOnBalls: stats.baseOnBalls,
+                        hits: stats.hits,
+                        hitByPitch: stats.hitByPitch,
+                        gamesStarted: stats.gamesStarted,
+                        era: Number(stats.era),
+                        inningsPitched: stats.inningsPitched,
+                        wins: stats.wins,
+                        losses: stats.losses,
+                        saves: stats.saves,
+                        earnedRuns: stats.earnedRuns,
+                        whip: Number(stats.whip),
+                        battersFaced: stats.battersFaced,
+                        winPercentage: Number(stats.winPercentage),
+                        kbbRatio: Number(stats.strikeoutWalkRatio),
+                        soPer9: Number(stats.strikeoutsPer9Inn),
+                        bbPer9: Number(stats.walksPer9Inn),
+                        hitsPer9: Number(stats.hitsPer9Inn),
+                        hrPer9: Number(stats.homeRunsPer9),
+                        team: result.splits[0].team?.id,
+                        numTeams: 1,
+                        partialYear: false,
+                    }
+                    if (year.numTeams) {
+                        yearSplit.numTeams = year.numTeams;
+                        multiYears.push(year.season);
+                    }
+                    return yearSplit;
+                });
+                yearStats.forEach(row => {
+                    if (multiYears.includes(row.season) && row.numTeams === 1) {
+                        row.partialYear = true;
+                    }
+                });
+                const yearByYearPitching: YearByYearPitching = {
+                    type: "yearByYear",
+                    group: "pitching",
+                    stats: yearStats,
+                }
+                return yearByYearPitching;
+            }
         }
     })
-    return { careerStats, yearStats };
+    const splitsObject: SplitObject = {
+        careerHitting: splits.find((element) => (element.group === "hitting" && element.type === "career")),
+        yearHitting: splits.find((element) => (element.group === "hitting" && element.type === "yearByYear")),
+        careerPitching: splits.find((element) => (element.group === "pitching" && element.type === "career")),
+        yearPitching: splits.find((element) => (element.group === "pitching" && element.type === "yearByYear")),
+    }
+    return splitsObject;
 }
 
 export enum Position {

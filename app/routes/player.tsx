@@ -1,4 +1,4 @@
-import type { Player, YearSplit } from "~/util";
+import type { Player, YearHitting } from "~/util";
 import { Position, mlbTeams, getSplits } from "~/util";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
@@ -19,7 +19,7 @@ enum Month {
     December,
 }
 
-type SortMethod = { field: keyof YearSplit, asc: boolean };
+type SortMethod = { field: keyof YearHitting, asc: boolean };
 
 export async function loader({ params }: Route.LoaderArgs) {
     const { playerId } = params;
@@ -30,7 +30,7 @@ export async function loader({ params }: Route.LoaderArgs) {
     const rawPlayer = response.people[0];
 
 
-    const statsUrl = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=yearByYear,career`;
+    const statsUrl = `https://statsapi.mlb.com/api/v1/people/${playerId}/stats?stats=yearByYear,career&group=hitting,pitching`;
     const statsResponse = await fetch(statsUrl)
         .then((res) => res.json());
     const stats = getSplits(statsResponse.stats);
@@ -84,7 +84,6 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Player({ loaderData }: Route.ComponentProps) {
 
     const { player, stats } = loaderData;
-    const { careerStats, yearStats } = stats;
     const navigation = useNavigation();
     const [showSpinner, setShowSpinner] = useState(true);
     const [sortType, setSortType] = useState<SortMethod>({ field: "season", asc: true });
@@ -94,13 +93,16 @@ export default function Player({ loaderData }: Route.ComponentProps) {
         setPrevId(player.id);
         setShowSpinner(true);
     }
+    
+    const { yearHitting, careerHitting, yearPitching, careerPitching } = stats;
 
-    const lastYear = yearStats[yearStats.length - 1];
+    console.log(yearPitching);
 
-    const filteredStats = yearStats.filter((row) => !row.partialYear);
-    const tableStats = sortRows(filteredStats, sortType);
+    const lastYear = yearHitting ? yearHitting.stats[yearHitting.stats.length - 1] : undefined;
+    const filteredStats = yearHitting?.stats.filter((row) => !row.partialYear);
+    const tableStats = filteredStats ? sortRows(filteredStats, sortType) : undefined;
 
-    const handleSort = (field: keyof YearSplit) => {
+    const handleSort = (field: keyof YearHitting) => {
         const newMethod: SortMethod = { field: field, asc: false }
         if (sortType.field == field) {
             newMethod.asc = !sortType.asc;
@@ -177,7 +179,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 </div>
             </div>
             <div className="player-content">
-                {yearStats &&
+                {lastYear &&
                     <div className="last-season">
                         <h2>{lastYear.season}</h2>
                         <div className="table-wrapper">
@@ -214,7 +216,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         </div>
                     </div>
                 }
-                {yearStats &&
+                {(yearHitting && careerHitting && tableStats) &&
                     <div className="year-stats">
                         <h2>Batting</h2>
                         <div className="table-wrapper">
@@ -257,17 +259,17 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                     <tr className="career-stats">
                                         <td>Total</td>
                                         <td></td>
-                                        <td>{careerStats.team ? mlbTeams[careerStats.team].abbreviation : "---"}</td>
-                                        <td>{careerStats.gamesPlayed}</td>
-                                        <td>{careerStats.plateAppearances}</td>
-                                        <td>{careerStats.runs}</td>
-                                        <td>{careerStats.rbi}</td>
-                                        <td>{careerStats.hits}</td>
-                                        <td>{careerStats.homeRuns}</td>
-                                        <td>{statString(careerStats.avg)}</td>
-                                        <td>{statString(careerStats.obp)}</td>
-                                        <td>{statString(careerStats.slg)}</td>
-                                        <td>{statString(careerStats.ops)}</td>
+                                        <td>{careerHitting.stats.team ? mlbTeams[careerHitting.stats.team].abbreviation : "---"}</td>
+                                        <td>{careerHitting.stats.gamesPlayed}</td>
+                                        <td>{careerHitting.stats.plateAppearances}</td>
+                                        <td>{careerHitting.stats.runs}</td>
+                                        <td>{careerHitting.stats.rbi}</td>
+                                        <td>{careerHitting.stats.hits}</td>
+                                        <td>{careerHitting.stats.homeRuns}</td>
+                                        <td>{statString(careerHitting.stats.avg)}</td>
+                                        <td>{statString(careerHitting.stats.obp)}</td>
+                                        <td>{statString(careerHitting.stats.slg)}</td>
+                                        <td>{statString(careerHitting.stats.ops)}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -301,7 +303,7 @@ const parseDate = (date: string) => {
 
 const statString = (num: number) => num.toFixed(3).replace(/0\./, '.');
 
-const sortRows = (splits: Array<YearSplit>, { field, asc }: SortMethod) => {
+const sortRows = (splits: Array<YearHitting>, { field, asc }: SortMethod) => {
     // const mapped = splits.map((row, i) => ({ i, value: row[field] }));
     const mapped = splits.map((row, i) => {
         if (field == "team" && row.team) {
