@@ -1,4 +1,4 @@
-import type { Player, YearHitting } from "~/util";
+import type { Player, YearHitting, YearPitching } from "~/util";
 import { Position, mlbTeams, getSplits } from "~/util";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
@@ -18,8 +18,8 @@ enum Month {
     November,
     December,
 }
-
-type SortMethod = { field: keyof YearHitting, asc: boolean };
+interface SortMethod<T> { field: keyof T, asc: boolean };
+type YearSplit = YearHitting | YearPitching;
 
 export async function loader({ params }: Route.LoaderArgs) {
     const { playerId } = params;
@@ -86,31 +86,48 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     const { player, stats } = loaderData;
     const navigation = useNavigation();
     const [showSpinner, setShowSpinner] = useState(true);
-    const [sortType, setSortType] = useState<SortMethod>({ field: "season", asc: true });
+    const [hittingSort, setHittingSort] = useState<SortMethod<YearHitting>>({ field: "season", asc: true });
+    const [pitchingSort, setPitchingSort] = useState<SortMethod<YearPitching>>({ field: "season", asc: true });
     const [prevId, setPrevId] = useState(player.id);
 
     if (player.id !== prevId) {
         setPrevId(player.id);
         setShowSpinner(true);
     }
-    
+
+    // career and year-by-year hitting and pitching stats
+    // will be undefined if only one stat group is present
     const { yearHitting, careerHitting, yearPitching, careerPitching } = stats;
 
-    console.log(yearPitching);
+    const lastYearHitting = yearHitting?.stats[yearHitting.stats.length - 1];
+    const filteredHittingStats = yearHitting?.stats.filter((row) => !row.partialYear);
+    const hittingTableStats = filteredHittingStats ? sortRows(filteredHittingStats, hittingSort) : undefined;
 
-    const lastYear = yearHitting ? yearHitting.stats[yearHitting.stats.length - 1] : undefined;
-    const filteredStats = yearHitting?.stats.filter((row) => !row.partialYear);
-    const tableStats = filteredStats ? sortRows(filteredStats, sortType) : undefined;
+    const lastYearPitching = yearPitching?.stats[yearPitching.stats.length - 1];
+    const filteredPitchingStats = yearPitching?.stats.filter((row) => !row.partialYear);
+    const pitchingTableStats = filteredPitchingStats ? sortRows(filteredPitchingStats, pitchingSort) : undefined;
 
-    const handleSort = (field: keyof YearHitting) => {
-        const newMethod: SortMethod = { field: field, asc: false }
-        if (sortType.field == field) {
-            newMethod.asc = !sortType.asc;
+    //This is broken because keyof YearSplit is only the common keys
+    const handleHittingSort = (field: keyof YearHitting) => {
+        const newMethod: SortMethod<YearHitting> = { field: field, asc: false }
+        if (hittingSort.field == field) {
+            newMethod.asc = !hittingSort.asc;
         }
         else if (field == "season" || field == "age") {
             newMethod.asc = true;
         }
-        setSortType(newMethod);
+        setHittingSort(newMethod);
+    }
+
+    const handlePitchingSort = (field: keyof YearPitching) => {
+        const newMethod: SortMethod<YearPitching> = { field: field, asc: false }
+        if (pitchingSort.field == field) {
+            newMethod.asc = !pitchingSort.asc;
+        }
+        else if (field == "season" || field == "age") {
+            newMethod.asc = true;
+        }
+        setPitchingSort(newMethod);
     }
 
     return (
@@ -128,6 +145,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         <h2>{player.currentOrg.name}</h2>
                     }
                 </div>
+                {/* Biographical info and headshot */}
                 <div className="player-info">
                     <div className="icon-wrapper">
 
@@ -179,9 +197,12 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 </div>
             </div>
             <div className="player-content">
-                {lastYear &&
+                {yearHitting &&
+                    <h2>Batting</h2>
+                }
+                {lastYearHitting &&
                     <div className="last-season">
-                        <h2>{lastYear.season}</h2>
+                        <h2>{lastYearHitting.season}</h2>
                         <div className="table-wrapper">
                             <table className="player-table">
                                 <thead>
@@ -200,46 +221,46 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>{lastYear.gamesPlayed}</td>
-                                        <td>{lastYear.plateAppearances}</td>
-                                        <td>{lastYear.runs}</td>
-                                        <td>{lastYear.rbi}</td>
-                                        <td>{lastYear.hits}</td>
-                                        <td>{lastYear.homeRuns}</td>
-                                        <td>{statString(lastYear.avg)}</td>
-                                        <td>{statString(lastYear.obp)}</td>
-                                        <td>{statString(lastYear.slg)}</td>
-                                        <td>{statString(lastYear.ops)}</td>
+                                        <td>{lastYearHitting.gamesPlayed}</td>
+                                        <td>{lastYearHitting.plateAppearances}</td>
+                                        <td>{lastYearHitting.runs}</td>
+                                        <td>{lastYearHitting.rbi}</td>
+                                        <td>{lastYearHitting.hits}</td>
+                                        <td>{lastYearHitting.homeRuns}</td>
+                                        <td>{statString(lastYearHitting.avg)}</td>
+                                        <td>{statString(lastYearHitting.obp)}</td>
+                                        <td>{statString(lastYearHitting.slg)}</td>
+                                        <td>{statString(lastYearHitting.ops)}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 }
-                {(yearHitting && careerHitting && tableStats) &&
+                {(careerHitting && hittingTableStats) &&
                     <div className="year-stats">
-                        <h2>Batting</h2>
+                        <h2>Career</h2>
                         <div className="table-wrapper">
                             <table className="player-table">
                                 <thead>
                                     <tr>
-                                        <th scope="col" onClick={() => handleSort("season")}>Year</th>
-                                        <th scope="col" onClick={() => handleSort("age")}>Age</th>
-                                        <th scope="col" onClick={() => handleSort("team")}>Team</th>
-                                        <th scope="col" onClick={() => handleSort("gamesPlayed")}>G</th>
-                                        <th scope="col" onClick={() => handleSort("plateAppearances")}>PA</th>
-                                        <th scope="col" onClick={() => handleSort("runs")}>R</th>
-                                        <th scope="col" onClick={() => handleSort("rbi")}>RBI</th>
-                                        <th scope="col" onClick={() => handleSort("hits")}>H</th>
-                                        <th scope="col" onClick={() => handleSort("homeRuns")}>HR</th>
-                                        <th scope="col" onClick={() => handleSort("avg")}>AVG</th>
-                                        <th scope="col" onClick={() => handleSort("obp")}>OBP</th>
-                                        <th scope="col" onClick={() => handleSort("slg")}>SLG</th>
-                                        <th scope="col" onClick={() => handleSort("ops")}>OPS</th>
+                                        <th scope="col" onClick={() => handleHittingSort("season")}>Year</th>
+                                        <th scope="col" onClick={() => handleHittingSort("age")}>Age</th>
+                                        <th scope="col" onClick={() => handleHittingSort("team")}>Team</th>
+                                        <th scope="col" onClick={() => handleHittingSort("gamesPlayed")}>G</th>
+                                        <th scope="col" onClick={() => handleHittingSort("plateAppearances")}>PA</th>
+                                        <th scope="col" onClick={() => handleHittingSort("runs")}>R</th>
+                                        <th scope="col" onClick={() => handleHittingSort("rbi")}>RBI</th>
+                                        <th scope="col" onClick={() => handleHittingSort("hits")}>H</th>
+                                        <th scope="col" onClick={() => handleHittingSort("homeRuns")}>HR</th>
+                                        <th scope="col" onClick={() => handleHittingSort("avg")}>AVG</th>
+                                        <th scope="col" onClick={() => handleHittingSort("obp")}>OBP</th>
+                                        <th scope="col" onClick={() => handleHittingSort("slg")}>SLG</th>
+                                        <th scope="col" onClick={() => handleHittingSort("ops")}>OPS</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {tableStats.map((row) => (
+                                    {hittingTableStats.map((row) => (
                                         <tr key={row.season}>
                                             <td>{row.season}</td>
                                             <td>{row.age}</td>
@@ -276,6 +297,106 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         </div>
                     </div>
                 }
+                {yearPitching &&
+                    <h2>Pitching</h2>
+                }
+                {lastYearPitching &&
+                    <div className="last-season">
+                        <h2>{lastYearPitching.season}</h2>
+                        <div className="table-wrapper">
+                            <table className="player-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">G</th>
+                                        <th scope="col">GS</th>
+                                        <th scope="col">W</th>
+                                        <th scope="col">L</th>
+                                        <th scope="col">ERA</th>
+                                        <th scope="col">IP</th>
+                                        <th scope="col">WHIP</th>
+                                        <th scope="col">K/9</th>
+                                        <th scope="col">BB/9</th>
+                                        <th scope="col">SV</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>{lastYearPitching.gamesPlayed}</td>
+                                        <td>{lastYearPitching.gamesStarted}</td>
+                                        <td>{lastYearPitching.wins}</td>
+                                        <td>{lastYearPitching.losses}</td>
+                                        <td>{lastYearPitching.era.toFixed(2)}</td>
+                                        <td>{lastYearPitching.inningsPitched}</td>
+                                        <td>{lastYearPitching.whip}</td>
+                                        <td>{lastYearPitching.soPer9.toFixed(1)}</td>
+                                        <td>{lastYearPitching.bbPer9.toFixed(1)}</td>
+                                        <td>{lastYearPitching.saves}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                {(careerPitching && pitchingTableStats) &&
+                    <div className="year-stats">
+                        <h2>Career</h2>
+                        <div className="table-wrapper">
+                            <table className="player-table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" onClick={() => handlePitchingSort("season")}>Year</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("age")}>Age</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("team")}>Team</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("gamesPlayed")}>G</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("gamesStarted")}>GS</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("wins")}>W</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("losses")}>L</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("era")}>ERA</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("inningsPitched")}>IP</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("whip")}>WHIP</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("soPer9")}>K/9</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("bbPer9")}>BB/9</th>
+                                        <th scope="col" onClick={() => handlePitchingSort("saves")}>SV</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pitchingTableStats.map((row) => (
+                                        <tr key={row.season}>
+                                            <td>{row.season}</td>
+                                            <td>{row.age}</td>
+                                            <td>{row.team ? mlbTeams[row.team].abbreviation : row.numTeams + "TM"}</td>
+                                            <td>{row.gamesPlayed}</td>
+                                            <td>{row.gamesStarted}</td>
+                                            <td>{row.wins}</td>
+                                            <td>{row.losses}</td>
+                                            <td>{row.era.toFixed(2)}</td>
+                                            <td>{row.inningsPitched}</td>
+                                            <td>{row.whip}</td>
+                                            <td>{row.soPer9.toFixed(1)}</td>
+                                            <td>{row.bbPer9.toFixed(1)}</td>
+                                            <td>{row.saves}</td>
+                                        </tr>
+                                    ))}
+                                    <tr className="career-stats">
+                                        <td>Total</td>
+                                        <td></td>
+                                        <td>{careerPitching.stats.team ? mlbTeams[careerPitching.stats.team].abbreviation : "---"}</td>
+                                        <td>{careerPitching.stats.gamesPlayed}</td>
+                                        <td>{careerPitching.stats.gamesStarted}</td>
+                                        <td>{careerPitching.stats.wins}</td>
+                                        <td>{careerPitching.stats.losses}</td>
+                                        <td>{careerPitching.stats.era.toFixed(2)}</td>
+                                        <td>{careerPitching.stats.inningsPitched}</td>
+                                        <td>{careerPitching.stats.whip}</td>
+                                        <td>{careerPitching.stats.soPer9.toFixed(1)}</td>
+                                        <td>{careerPitching.stats.bbPer9.toFixed(1)}</td>
+                                        <td>{careerPitching.stats.saves}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     );
@@ -303,33 +424,37 @@ const parseDate = (date: string) => {
 
 const statString = (num: number) => num.toFixed(3).replace(/0\./, '.');
 
-const sortRows = (splits: Array<YearHitting>, { field, asc }: SortMethod) => {
-    // const mapped = splits.map((row, i) => ({ i, value: row[field] }));
-    const mapped = splits.map((row, i) => {
-        if (field == "team" && row.team) {
-            return { i, value: mlbTeams[row.team].abbreviation };
-        }
-        return { i, value: row[field] };
-    });
-    mapped.sort((a, b) => {
-        if (a.value && b.value) {
-            if (field == "team") {
-                if (a.value > b.value) {
+//This is broken because SortMethod only holds common keys
+//Might need to use generics or make two different functions
+function sortRows<T extends YearSplit>(splits: Array<T>, { field, asc }: { field: keyof T, asc: boolean }): Array<T> {
+    const sorted = splits.toSorted((a, b) => {
+        if (a[field] !== undefined && b[field] !== undefined && a[field] !== null && b[field] !== null) {
+            if (field == "team" && a.team && b.team) {
+                if (mlbTeams[a.team].abbreviation > mlbTeams[b.team].abbreviation) {
                     return asc ? 1 : -1;
                 }
-                if (a.value < b.value) {
+                if (mlbTeams[a.team].abbreviation < mlbTeams[b.team].abbreviation) {
                     return asc ? -1 : 1;
                 }
             }
-            if (a.value > b.value) {
+            if (field == "inningsPitched") {
+                if (Number(a[field]) > Number(b[field])) {
+                    return asc ? 1 : -1;
+                }
+                if (Number(a[field]) < Number(b[field])) {
+                    return asc ? -1 : 1;
+                }
+            }
+            if (a[field] > b[field]) {
                 return asc ? 1 : -1;
             }
-            if (a.value < b.value) {
+            if (a[field] < b[field]) {
                 return asc ? -1 : 1;
             }
+        } else {
+            console.log(a[field] + " compared to " + b[field]);
         }
         return 0;
     });
-    const sorted = mapped.map((v) => splits[v.i]);
     return sorted;
 }

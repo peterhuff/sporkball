@@ -121,7 +121,7 @@ interface PitchingSplit {
     team?: TeamCode;
 }
 
-type YearPitching = PitchingSplit & YearData;
+export type YearPitching = PitchingSplit & YearData;
 
 export function getSplits(results: any) {
     const splits: Array<Split> = results.map((result: any) => {
@@ -289,7 +289,7 @@ export function getSplits(results: any) {
                         bbPer9: Number(stats.walksPer9Inn),
                         hitsPer9: Number(stats.hitsPer9Inn),
                         hrPer9: Number(stats.homeRunsPer9),
-                        team: result.splits[0].team?.id,
+                        team: year.team?.id,
                         numTeams: 1,
                         partialYear: false,
                     }
