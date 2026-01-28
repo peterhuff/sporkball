@@ -26,12 +26,14 @@ import type { PlayerId } from "~/util";
 export async function loader() {
 
     // get list from api and convert to json
-    const url = "https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=totalPlateAppearances&fields=leagueLeaders,leaders,person,id,fullName&limit=10";
+    const url = "https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=totalPlateAppearances&fields=leagueLeaders,leaders,person,id,fullName,season&limit=10";
     const response = await fetch(url)
         .then((res) => res.json());
 
     // map json to array of PlayerIds
     const topPlayers: Array<PlayerId> = response.leagueLeaders[0].leaders.map((player: any) => player.person);
+    const currentSeason: number = response.leagueLeaders[0].leaders[0].season;
+    console.log(currentSeason);
 
     if (!topPlayers) {
         throw new Response("Not Found", { status: 404 });
