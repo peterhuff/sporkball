@@ -16,6 +16,10 @@ header {
   gap: .25rem;
 }
 
+button {
+  cursor: pointer;
+}
+
 .content {
   padding-bottom: 1rem;
 }
@@ -75,6 +79,7 @@ nav {
   border-radius: 1rem;
   background-color: white;
   padding-left: .25rem;
+  cursor: text;
 }
 
 .search-button:hover {
@@ -257,7 +262,7 @@ nav {
 }
 
 .type-selector {
-  color: black;
+  cursor: pointer;
 }
 
 .stats-tables {
