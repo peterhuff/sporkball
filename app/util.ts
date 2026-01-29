@@ -172,7 +172,7 @@ export function getSplits(results: any) {
                         prevAge = stats.age;
                     }
                     const yearSplit: YearHitting = {
-                        season: year.season,
+                        season: Number(year.season),
                         age: stats.age ?? prevAge,
                         gamesPlayed: stats.gamesPlayed,
                         runs: stats.runs,
@@ -265,7 +265,7 @@ export function getSplits(results: any) {
                         prevAge = stats.age;
                     }
                     const yearSplit: YearPitching = {
-                        season: year.season,
+                        season: Number(year.season),
                         age: stats.age ?? prevAge,
                         gamesPlayed: stats.gamesPlayed,
                         runs: stats.runs,

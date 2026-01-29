@@ -3,6 +3,7 @@ import {
     Link,
     useFetcher,
     useNavigation,
+    useOutletContext,
 } from "react-router";
 import type { Route } from "./+types/header";
 import {
@@ -32,13 +33,12 @@ export async function loader() {
 
     // map json to array of PlayerIds
     const topPlayers: Array<PlayerId> = response.leagueLeaders[0].leaders.map((player: any) => player.person);
-    const currentSeason: number = response.leagueLeaders[0].leaders[0].season;
-    console.log(currentSeason);
+    const currentSeason = Number(response.leagueLeaders[0].leaders[0].season);
 
     if (!topPlayers) {
         throw new Response("Not Found", { status: 404 });
     }
-    return { topPlayers };
+    return { topPlayers, currentSeason };
 }
 
 type HeaderMode = 'none' | 'search' | 'menu';
@@ -47,7 +47,7 @@ export default function HeaderLayout({
     loaderData,
 }: Route.ComponentProps) {
 
-    const { topPlayers } = loaderData; // top 10 players by plate appearances
+    const { topPlayers, currentSeason } = loaderData; // top 10 players by plate appearances
     const navigation = useNavigation();
 
     // state variables
@@ -284,10 +284,14 @@ export default function HeaderLayout({
                 // content fades after delay when new page is loading
                 className={navigation.state === "loading" ? "content loading" : "content"}
             >
-                <Outlet />
+                <Outlet context={currentSeason}/>
             </div>
         </>
     );
+}
+
+export function getCurrentSeason() {
+    return useOutletContext<number>();
 }
 
 // convert full name to url name with

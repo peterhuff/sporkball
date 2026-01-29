@@ -1,5 +1,6 @@
 import type { Player, YearHitting, YearPitching } from "~/util";
 import { Position, mlbTeams, getSplits } from "~/util";
+import { getCurrentSeason } from "~/layouts/header";
 import type { Route } from "./+types/player";
 import { useNavigation } from "react-router";
 import { useState } from "react";
@@ -52,7 +53,7 @@ export async function loader({ params }: Route.LoaderArgs) {
         batSide: rawPlayer.batSide.description,
         throwHand: rawPlayer.pitchHand.description,
     };
-    
+
 
     for (const entry of rawPlayer.rosterEntries) {
         if (entry.team.parentOrgId &&
@@ -85,6 +86,8 @@ export async function loader({ params }: Route.LoaderArgs) {
 export default function Player({ loaderData }: Route.ComponentProps) {
 
     const { player, stats } = loaderData;
+    const currentSeason = getCurrentSeason();
+
     const navigation = useNavigation();
     const [showSpinner, setShowSpinner] = useState(true);
     const [hittingSort, setHittingSort] = useState<SortMethod<YearHitting>>({ field: "season", asc: true });
@@ -102,11 +105,11 @@ export default function Player({ loaderData }: Route.ComponentProps) {
     // will be undefined if only one stat group is present
     const { yearHitting, careerHitting, yearPitching, careerPitching } = stats;
 
-    const lastYearHitting = yearHitting?.stats[yearHitting.stats.length - 1];
+    const recentHitting = yearHitting?.stats[yearHitting.stats.length - 1];
     const filteredHittingStats = yearHitting?.stats.filter((row) => !row.partialYear);
     const hittingTableStats = filteredHittingStats ? sortRows(filteredHittingStats, hittingSort) : undefined;
 
-    const lastYearPitching = yearPitching?.stats[yearPitching.stats.length - 1];
+    const recentPitching = yearPitching?.stats[yearPitching.stats.length - 1];
     const filteredPitchingStats = yearPitching?.stats.filter((row) => !row.partialYear);
     const pitchingTableStats = filteredPitchingStats ? sortRows(filteredPitchingStats, pitchingSort) : undefined;
 
@@ -244,9 +247,9 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 }
                 {(careerHitting && hittingTableStats && statTypes[typeIndex] === "hitting") &&
                     <div className="stats-tables">
-                        {lastYearHitting &&
+                        {recentHitting?.season === currentSeason &&
                             <div className="last-season">
-                                <h2>{lastYearHitting.season}</h2>
+                                <h2>{recentHitting.season}</h2>
                                 <div className="table-wrapper">
                                     <table className="player-table">
                                         <thead>
@@ -265,16 +268,16 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td>{lastYearHitting.gamesPlayed}</td>
-                                                <td>{lastYearHitting.plateAppearances}</td>
-                                                <td>{lastYearHitting.runs}</td>
-                                                <td>{lastYearHitting.rbi}</td>
-                                                <td>{lastYearHitting.hits}</td>
-                                                <td>{lastYearHitting.homeRuns}</td>
-                                                <td>{statString(lastYearHitting.avg)}</td>
-                                                <td>{statString(lastYearHitting.obp)}</td>
-                                                <td>{statString(lastYearHitting.slg)}</td>
-                                                <td>{statString(lastYearHitting.ops)}</td>
+                                                <td>{recentHitting.gamesPlayed}</td>
+                                                <td>{recentHitting.plateAppearances}</td>
+                                                <td>{recentHitting.runs}</td>
+                                                <td>{recentHitting.rbi}</td>
+                                                <td>{recentHitting.hits}</td>
+                                                <td>{recentHitting.homeRuns}</td>
+                                                <td>{statString(recentHitting.avg)}</td>
+                                                <td>{statString(recentHitting.obp)}</td>
+                                                <td>{statString(recentHitting.slg)}</td>
+                                                <td>{statString(recentHitting.ops)}</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -343,9 +346,9 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                 }
                 {(careerPitching && pitchingTableStats && statTypes[typeIndex] === "pitching") &&
                     <div className="stats-tables">
-                        {lastYearPitching &&
+                        {recentPitching?.season === currentSeason &&
                             <div className="last-season">
-                                <h2>{lastYearPitching.season}</h2>
+                                <h2>{recentPitching.season}</h2>
                                 <div className="table-wrapper">
                                     <table className="player-table">
                                         <thead>
@@ -364,16 +367,16 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                         </thead>
                                         <tbody>
                                             <tr>
-                                                <td>{lastYearPitching.gamesPlayed}</td>
-                                                <td>{lastYearPitching.gamesStarted}</td>
-                                                <td>{lastYearPitching.wins}</td>
-                                                <td>{lastYearPitching.losses}</td>
-                                                <td>{lastYearPitching.era.toFixed(2)}</td>
-                                                <td>{lastYearPitching.inningsPitched}</td>
-                                                <td>{lastYearPitching.whip}</td>
-                                                <td>{lastYearPitching.soPer9.toFixed(1)}</td>
-                                                <td>{lastYearPitching.bbPer9.toFixed(1)}</td>
-                                                <td>{lastYearPitching.saves}</td>
+                                                <td>{recentPitching.gamesPlayed}</td>
+                                                <td>{recentPitching.gamesStarted}</td>
+                                                <td>{recentPitching.wins}</td>
+                                                <td>{recentPitching.losses}</td>
+                                                <td>{recentPitching.era.toFixed(2)}</td>
+                                                <td>{recentPitching.inningsPitched}</td>
+                                                <td>{recentPitching.whip}</td>
+                                                <td>{recentPitching.soPer9.toFixed(1)}</td>
+                                                <td>{recentPitching.bbPer9.toFixed(1)}</td>
+                                                <td>{recentPitching.saves}</td>
                                             </tr>
                                         </tbody>
                                     </table>
