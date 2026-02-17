@@ -123,7 +123,14 @@ interface PitchingSplit {
 
 export type YearPitching = PitchingSplit & YearData;
 
-export function getSplits(results: any) {
+export interface LeaderId extends PlayerId {
+    value: number;
+    rank: number;
+    team?: TeamCode;
+    numTeams: number;
+}
+
+export function getSplits(results: any): SplitObject {
     const splits: Array<Split> = results.map((result: any) => {
         if (result.group.displayName === "hitting") {
             if (result.type.displayName === "career") {
@@ -205,7 +212,7 @@ export function getSplits(results: any) {
                     }
                     if (year.numTeams) {
                         yearSplit.numTeams = year.numTeams;
-                        multiYears.push(year.season);
+                        multiYears.push(Number(year.season));
                     }
                     return yearSplit;
                 });
@@ -520,6 +527,16 @@ export const mlbTeams = {
         color: "#FF5910",
         fontColor: "black",
     },
+};
+
+// convert full name to url name with
+// all lowercase, dash between names, no periods or special characters
+export function urlName(fullName: string): string {
+    const lowerCase = fullName.toLowerCase();
+    const dash = lowerCase.replaceAll(' ', '-');
+    const noPeriods = dash.replaceAll('.', '');
+    const normalized = noPeriods.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    return normalized;
 };
 
 // export async function getTop(): Promise<Array<PlayerId>> {

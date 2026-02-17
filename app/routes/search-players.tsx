@@ -2,7 +2,7 @@ import type { Route } from "./+types/search-players";
 import type { PlayerId } from "~/util";
 
 // get result of user player search
-export async function clientLoader({ request }: Route.LoaderArgs) {
+export async function clientLoader({ request }: Route.ClientLoaderArgs) {
     const url = new URL(request.url);
     const query = url.searchParams.get("q");
     if (!query) {

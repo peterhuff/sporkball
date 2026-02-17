@@ -9,7 +9,6 @@ import type { Route } from "./+types/header";
 import {
     useState,
     useEffect,
-    useEffectEvent,
     useRef,
 } from "react";
 import type { clientLoader } from "~/routes/search-players";
@@ -21,6 +20,7 @@ import ExitIcon from "~/images/exit.svg";
 import SearchIconGray from "~/images/search-gray.svg";
 
 import type { PlayerId } from "~/util";
+import { urlName } from "~/util"
 
 // Gets a list of top 10 players by plate appearances from most recent season
 // Will be used as default values for search bar
@@ -54,28 +54,15 @@ export default function HeaderLayout({
     const [headerMode, setHeaderMode] = useState<HeaderMode>('none');
     const [searchValue, setSearchValue] = useState("");
     const [delayTimer, setDelayTimer] = useState<NodeJS.Timeout | null>(null); // delay timer for searchbar
-    
+    const [showResults, setShowResults] = useState(false);
+
 
     // ref to header allows click event handler to check if click was outside
     const comboRef = useRef<HTMLElement>(null);
+    const searchRef = useRef<HTMLDivElement>(null);
 
     // fetcher for player search
     const fetcher = useFetcher<typeof clientLoader>();
-
-    // event listener allows escape key to close searchbar
-    useEffect(() => {
-        window.addEventListener("keydown", handleKeyDown);
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, []);
-
-    // effect event allows checking isSearching without making it a dependency
-    const handleKeyDown = useEffectEvent((event: KeyboardEvent) => {
-        if (event.key === "Escape" && headerMode === 'search') {
-            setHeaderMode('none');
-        }
-    });
 
     // clears search bar when new page is loaded
     useEffect(() => {
@@ -83,6 +70,7 @@ export default function HeaderLayout({
         // close search bar, clear input, empty search
         if (navigation.state === "idle") {
             setHeaderMode('none');
+            setShowResults(false);
             setSearchValue("");
             fetcher.load("/search-players");
         }
@@ -126,16 +114,9 @@ export default function HeaderLayout({
 
     // if user is typing, clear searchbar instead of closing it
     const handleSearchKey = (event: React.KeyboardEvent<HTMLInputElement>): void => {
-
-        event.stopPropagation(); // stop searchbar from closing
-
         // clear searchbar if there are any characters, otherwise close
         if (event.key === "Escape") {
-            if (searchValue.length > 0) {
-                setSearchValue("");
-                fetcher.load("/search-players");
-            }
-            else {
+            if (searchValue.length === 0) {
                 setHeaderMode('none');
             }
         }
@@ -144,7 +125,7 @@ export default function HeaderLayout({
     return (
         <>
             <header ref={comboRef}>
-                {headerMode === 'search' ? (
+                {headerMode === 'search' ?
                     // if user is searching, navbar has searchbox and x button
                     <nav>
                         {/* search box */}
@@ -180,9 +161,7 @@ export default function HeaderLayout({
                                 className="nav-icon"
                             />
                         </button>
-                    </nav>
-
-                ) : (
+                    </nav> :
                     // if user is not searching, navbar has home icon, title, search button, and menu button
                     <nav>
                         {/* home icon and title */}
@@ -195,6 +174,14 @@ export default function HeaderLayout({
                             <span>SPORKBALL</span>
                         </Link>
                         <div className="nav-buttons">
+                            <div className="nav-links">
+                                <Link to="/" className="nav-link">
+                                    HOME
+                                </Link>
+                                <Link to="/about" className="nav-link">
+                                    ABOUT
+                                </Link>
+                            </div>
                             {/* search button */}
                             <button
                                 type="button"
@@ -208,6 +195,7 @@ export default function HeaderLayout({
                                     alt="Search icon"
                                     className="search-icon"
                                 />
+                                <span>Search</span>
                             </button>
                             {/* menu button */}
                             <button
@@ -223,68 +211,141 @@ export default function HeaderLayout({
                                     className="nav-icon"
                                 />
                             </button>
+                            {/* desktop search bar */}
+                            <div className="search-wrapper" id="desktop-search">
+                                <img
+                                    src={SearchIconGray}
+                                    alt="Search icon"
+                                    className="search-icon"
+                                />
+                                <input
+                                    type="search"
+                                    name="q"
+                                    className="player-search"
+                                    placeholder="Player Search"
+                                    autoComplete="off"
+                                    value={searchValue}
+                                    onChange={searchChanged}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Escape") {
+                                            if (searchValue.length === 0) {
+                                                e.currentTarget.blur();
+                                            }
+                                        }
+                                    }}
+                                    onFocus={() => setShowResults(true)}
+                                    onBlur={(e) => {
+                                        if (e.relatedTarget?.id === "desktop-addition") {
+                                            e.target.focus();
+                                        } else if (e.relatedTarget?.className !== "nav-link") {
+                                            setShowResults(false);
+                                        }
+                                    }
+                                    }
+                                />
+                            </div>
                         </div>
                     </nav>
-                )}
-                {headerMode === 'search' &&
-                    // if user is searching, display list of search result links 
-                    <ul
-                        className="header-addition"
-                        // fade results if new search is loading
-                        style={{
-                            color: fetcher.state === "idle" ? "rgb(0, 0, 0, 1)" : "rgb(0, 0, 0, .25)",
-                        }}
-                    >
-                        {(fetcher.data && fetcher.data.length > 0) ?
-                            // if player has search results, show them
-                            fetcher.data.map((player) => (
-                                <li key={player.id} className="search-result">
-                                    <Link
-                                        to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        className="nav-link"
-                                    >
-                                        {player.fullName}
-                                    </Link>
-                                </li>
-                            ))
-                            :
-                            // otherwise, show top 10 players by PA
-                            topPlayers.map((player) => (
-                                <li key={player.id} className="search-result">
-                                    <Link
-                                        to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
-                                        className="nav-link"
-                                    >
-                                        {player.fullName}
-                                    </Link>
-                                </li>
-                            ))
-                        }
-                    </ul>
                 }
-                {headerMode === 'menu' &&
-                    // if menu is open show list of nav links
-                    <ul
-                        className="header-addition text-right"
+                {headerMode !== 'none' &&
+                    <div className="header-addition">
+                        {headerMode === 'search' ?
+                            <ul
+                                // fade results if new search is loading
+                                style={{
+                                    color: fetcher.state === "idle" ? "inherit" : "rgb(0, 0, 0, .25)",
+                                }}
+                            >
+                                {(fetcher.data && fetcher.data.length > 0) ?
+                                    // if player has search results, show them
+                                    fetcher.data.map((player) => (
+                                        <li key={player.id} className="search-result">
+                                            <Link
+                                                to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                                className="nav-link"
+                                            >
+                                                {player.fullName}
+                                            </Link>
+                                        </li>
+                                    ))
+                                    :
+                                    // otherwise, show top 10 players by PA
+                                    topPlayers.map((player) => (
+                                        <li key={player.id} className="search-result">
+                                            <Link
+                                                to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                                className="nav-link"
+                                            >
+                                                {player.fullName}
+                                            </Link>
+                                        </li>
+                                    ))
+                                }
+                            </ul> :
+                            <ul
+                                className="text-right"
+                            >
+                                <li className="search-result">
+                                    <Link to="/" className="nav-link">
+                                        HOME
+                                    </Link>
+                                </li>
+                                <li className="search-result">
+                                    <Link to="/about" className="nav-link">
+                                        ABOUT
+                                    </Link>
+                                </li>
+                            </ul>
+                        }
+
+                    </div>
+                }
+                {showResults &&
+                    <div
+                        className="header-addition"
+                        id="desktop-addition"
+                        tabIndex={0}
                     >
-                        <li className="search-result">
-                            <Link to="/" className="nav-link">
-                                HOME
-                            </Link>
-                        </li>
-                        <li className="search-result">
-                            <Link to="/about" className="nav-link">
-                                ABOUT
-                            </Link>
-                        </li>
-                    </ul>
+                        <ul
+                            // fade results if new search is loading
+                            style={{
+                                color: fetcher.state === "idle" ? "inherit" : "rgb(0, 0, 0, .25)",
+                            }}
+                        >
+                            {(fetcher.data && fetcher.data.length > 0) ?
+                                // if player has search results, show them
+                                fetcher.data.map((player) => (
+                                    <li key={player.id} className="search-result">
+                                        <Link
+                                            to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                            className="nav-link"
+                                        >
+                                            {player.fullName}
+                                        </Link>
+                                    </li>
+                                ))
+                                :
+                                // otherwise, show top 10 players by PA
+                                topPlayers.map((player) => (
+                                    <li key={player.id} className="search-result">
+                                        <Link
+                                            to={`players/${urlName(player.fullName)}/${player.id}`} key={player.id}
+                                            className="nav-link"
+                                        >
+                                            {player.fullName}
+                                        </Link>
+                                    </li>
+                                ))
+                            }
+                        </ul>
+                    </div>
                 }
             </header >
             <div
                 // content fades after delay when new page is loading
                 className={navigation.state === "loading" ? "content loading" : "content"}
             >
-                <Outlet context={currentSeason}/>
+                <Outlet context={currentSeason} />
             </div>
         </>
     );
@@ -294,18 +355,8 @@ export function getCurrentSeason() {
     return useOutletContext<number>();
 }
 
-// convert full name to url name with
-// all lowercase, dash between names, no periods or special characters
-const urlName = (fullName: string) => {
-    const lowerCase = fullName.toLowerCase();
-    const dash = lowerCase.replaceAll(' ', '-');
-    const noPeriods = dash.replaceAll('.', '');
-    const normalized = noPeriods.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    return normalized;
-};
-
 // Selects searchbar whenever it is rendered
 // ref callback calls when function changes, so it is defined outside the component
 const selectSearch = (node: HTMLInputElement) => {
-    node?.select();
+    node?.focus();
 };

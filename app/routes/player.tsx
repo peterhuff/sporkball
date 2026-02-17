@@ -167,65 +167,65 @@ export default function Player({ loaderData }: Route.ComponentProps) {
         <div className="player-page">
             <title>{`${player.fullName} | Sporkball`}</title>
             <div
-                className="bio-card"
+                className="bio-banner"
                 style={{
                     backgroundColor: player.currentOrg ? mlbTeams[player.currentOrg.id].color : "lightgray",
                     color: player.currentOrg ? mlbTeams[player.currentOrg.id].fontColor : "black",
-                }}>
-                <div className="name-team">
-                    <h1>{player.fullName}</h1>
-                    {player.currentOrg &&
-                        <h2>{player.currentOrg.name}</h2>
-                    }
-                </div>
-                {/* Biographical info and headshot */}
-                <div className="player-info">
-                    <div className="icon-wrapper">
-
-                        {navigation.state === 'idle' &&
+                }}
+            >
+                <div className="bio-card">
+                    <div className="name-team">
+                        <h1>{player.fullName}</h1>
+                        {player.currentOrg &&
+                            <h2>{player.currentOrg.name}</h2>
+                        }
+                    </div>
+                    {/* Biographical info and headshot */}
+                    <div className="player-info">
+                        <div className="icon-wrapper">
                             <img
-                                className="player-icon"
-                                src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
-                                loading="lazy"
-                                onLoad={() => setShowSpinner(false)}
-                                key={player.id}
-                                alt={player.fullName + " icon"}
+                                    className="player-icon"
+                                    src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
+                                    // onLoad={() => setShowSpinner(false)}
+                                    key={player.id}
+                                    alt={player.fullName + " icon"}
                             />
-                        }
-                        {showSpinner &&
-                            <div className="loading-splash-spinner" />
-                        }
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Position: ${Position[player.primaryPosition]}`}</p>
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Bats: ${player.batSide}`}</p>
-                        <p>•</p>
-                        <p className="info-header">{`Throws: ${player.throwHand}`}</p>
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Height: ${player.height}`}</p>
-                        <p>•</p>
-                        <p className="info-header">{`Weight: ${player.weight}`}</p>
-                    </div>
-                    {player.debutDate &&
-                        <div className="info-line">
-                            <p className="info-header">{`MLB Debut: ${parseDate(player.debutDate)}`}</p>
+                            <div className="loading-image">loading...</div>
+                            {/* {showSpinner &&
+                                <div className="loading-splash-spinner" />
+                            } */}
                         </div>
-                    }
-                    <div className="info-line">
-                        <p className="info-header">
-                            {"Birthplace: " + player.birthInfo.city + ", "}
-                            {player.birthInfo.stateProvince ? player.birthInfo.stateProvince + ", " : null}
-                            {player.birthInfo.country}
-                        </p>
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Birthdate: ${parseDate(player.birthInfo.date)}`}</p>
-                    </div>
-                    <div className="info-line">
-                        <p className="info-header">{`Full Name: ${player.fullFMLName}`}</p>
+                        <div className="info-line">
+                            <p className="info-header">{`Position: ${Position[player.primaryPosition]}`}</p>
+                        </div>
+                        <div className="info-line">
+                            <p className="info-header">{`Bats: ${player.batSide}`}</p>
+                            <p>•</p>
+                            <p className="info-header">{`Throws: ${player.throwHand}`}</p>
+                        </div>
+                        <div className="info-line">
+                            <p className="info-header">{`Height: ${player.height}`}</p>
+                            <p>•</p>
+                            <p className="info-header">{`Weight: ${player.weight} lb`}</p>
+                        </div>
+                        {player.debutDate &&
+                            <div className="info-line">
+                                <p className="info-header">{`MLB Debut: ${parseDate(player.debutDate)}`}</p>
+                            </div>
+                        }
+                        <div className="info-line">
+                            <p className="info-header">
+                                {"Birthplace: " + player.birthInfo.city + ", "}
+                                {player.birthInfo.stateProvince ? player.birthInfo.stateProvince + ", " : null}
+                                {player.birthInfo.country}
+                            </p>
+                        </div>
+                        <div className="info-line">
+                            <p className="info-header">{`Birthdate: ${parseDate(player.birthInfo.date)}`}</p>
+                        </div>
+                        <div className="info-line">
+                            <p className="info-header">{`Full Name: ${player.fullFMLName}`}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -495,8 +495,6 @@ function sortRows<T extends YearSplit>(splits: Array<T>, { field, asc }: { field
             if (a[field] < b[field]) {
                 return asc ? -1 : 1;
             }
-        } else {
-            console.log(a[field] + " compared to " + b[field]);
         }
         return 0;
     });

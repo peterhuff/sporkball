@@ -13,6 +13,10 @@ export default [
             "search-players",
             "routes/search-players.tsx"
         ),
+        route(
+            "get-leaders",
+            "routes/get-leaders.tsx"
+        ),
         route("players/:playerName/:playerId", "routes/player.tsx"),
     ]),
 ] satisfies RouteConfig;

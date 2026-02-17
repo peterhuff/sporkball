@@ -1,3 +1,4 @@
+import Leaderboard from "~/components/leaderboard";
 
 export default function Home() {
   return (
@@ -7,7 +8,18 @@ export default function Home() {
         name="description"
         content="Sporkball Baseball homepage"
       />
-      <p>This is the home page</p>
+      <div className="home-page">
+        <Leaderboard
+          group={"hitting"}
+          season={2025}
+          stat={"hits"}
+        />
+        <Leaderboard
+          group={"hitting"}
+          season={2025}
+          stat={"gamesPlayed"}
+        />
+      </div>
     </div>
   );
 }
