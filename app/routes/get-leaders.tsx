@@ -22,6 +22,5 @@ export async function loader({ request }: Route.LoaderArgs) {
         }
         return player;
     });
-    console.log("test");
     return leaders;
 }

@@ -302,7 +302,7 @@ export function getSplits(results: any): SplitObject {
                     }
                     if (year.numTeams) {
                         yearSplit.numTeams = year.numTeams;
-                        multiYears.push(year.season);
+                        multiYears.push(Number(year.season));
                     }
                     return yearSplit;
                 });
@@ -493,7 +493,7 @@ export const mlbTeams = {
     },
     116: {
         name: "Detroit Tigers",
-        abbreviation: "Det",
+        abbreviation: "DET",
         color: "#FA4616",
         fontColor: "black",
     },

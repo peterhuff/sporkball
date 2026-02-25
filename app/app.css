@@ -197,12 +197,104 @@ nav {
 
 .home-page {
   padding-top: 1rem;
+  text-align: center;
+  max-width: 85rem;
+  margin: 0 auto;
+}
+
+.leaders-type {
+  margin-bottom: 3rem;
+}
+
+.leaders-type>h2 {
+  font-size: xx-large;
+}
+
+.leaders-box {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.home-page h1 {
+  font-size: 3rem;
+}
+
+/*###############*/
+/* LEADERBOARD STYLES */
+
+.leaderboard {
+  border: 1px solid rgb(163, 163, 163);
+  border-radius: 1rem;
+  width: 20rem;
+  text-align: center;
+  padding: .5rem;
+}
+
+.leaderboard table {
+  text-align: left;
+  width: 100%;
+}
+
+.leaderboard td {
+  vertical-align: top;
+}
+
+.leaderboard .rank {
+  text-align: right;
+}
+
+.leaderboard .player-link {
+  display: flex;
+  gap: .4rem;
+}
+
+.leaderboard a {
+  text-decoration: none;
+  color: black;
+  font-weight: bold;
+}
+
+
+/*###############*/
+/* ABOUT PAGE STYLES */
+
+.about-page {
+  padding: 1rem 2rem 0 2rem;
+}
+
+.about-text {
+  margin: 0 auto;
+  max-width: 40rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.about-heading {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.about-heading span {
+  font-size: xx-large;
+}
+
+.github-link {
+  display: flex;
+  align-items: center;
+}
+
+.github-icon {
+  height: 2rem;
 }
 
 
 /*###############*/
 /* PLAYER PAGE STYLES */
-
 
 .bio-banner {
   border-top: 1px solid rgb(163, 163, 163);
@@ -368,46 +460,6 @@ h2 {
 .career-stats {
   background-color: lightgray;
 }
-
-/*###############*/
-/* LEADERBOARD STYLES */
-
-.leaderboard {
-  margin-left: 1rem;
-  border: 1px solid rgb(163, 163, 163);
-  border-radius: 1rem;
-  width: 20rem;
-  text-align: center;
-  padding: .5rem;
-}
-
-.leaderboard table {
-  text-align: left;
-  width: 100%;
-}
-
-.leaderboard td {
-  white-space: nowrap;
-}
-
-.leaderboard .rank {
-  text-align: right;
-}
-
-.leaderboard .player-link {
-  display: flex;
-  gap: .4rem;
-}
-
-.leaderboard a {
-  text-decoration: none;
-  color: black;
-  font-weight: bold;
-}
-
-/* .leaderboard .team-patch {
-  padding: 0 3px;
-} */
 
 @media screen and (min-width: 500px) {
   .nav-buttons .nav-button-mobile {

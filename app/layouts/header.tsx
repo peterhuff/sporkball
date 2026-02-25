@@ -27,7 +27,7 @@ import { urlName } from "~/util"
 export async function loader() {
 
     // get list from api and convert to json
-    const url = "https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=totalPlateAppearances&fields=leagueLeaders,leaders,person,id,fullName,season&limit=10";
+    const url = "https://statsapi.mlb.com/api/v1/stats/leaders?leaderCategories=totalPlateAppearances&season=2025&fields=leagueLeaders,leaders,person,id,fullName,season&limit=10";
     const response = await fetch(url)
         .then((res) => res.json());
 
@@ -106,7 +106,11 @@ export default function HeaderLayout({
 
         // 400 millisecond timeout before loading players
         const newTimer = setTimeout(() => {
-            fetcher.load(`/search-players?q=${event.target.value}`);
+            try {
+                fetcher.load(`/search-players?q=${event.target.value}`);
+            } catch (error) {
+                fetcher.load("/search-players");
+            }
         }, 400);
 
         setDelayTimer(newTimer);

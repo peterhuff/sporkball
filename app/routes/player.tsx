@@ -2,7 +2,7 @@ import type { Player, YearHitting, YearPitching } from "~/util";
 import { Position, mlbTeams, getSplits } from "~/util";
 import { getCurrentSeason } from "~/layouts/header";
 import type { Route } from "./+types/player";
-import { useNavigation } from "react-router";
+import { useNavigation, useParams } from "react-router";
 import { useState } from "react";
 
 enum Month {
@@ -24,6 +24,9 @@ type YearSplit = YearHitting | YearPitching;
 
 export async function loader({ params }: Route.LoaderArgs) {
     const { playerId } = params;
+
+    const imageUrl = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${playerId}/headshot/67/current`
+    fetch (imageUrl);
 
     const url = `https://statsapi.mlb.com/api/v1/people/${playerId}?hydrate=currentTeam,rosterEntries&fields=people,id,fullName,birthDate,birthCity,birthStateProvince,birthCountry,height,weight,rosterEntries,currentTeam,name,parentOrgId,primaryPosition,code,mlbDebutDate,batSide,description,pitchHand,fullFMLName`;
     const response = await fetch(url)
@@ -80,12 +83,13 @@ export async function loader({ params }: Route.LoaderArgs) {
             break;
         }
     }
-    return { player, stats };
+
+    return { player, stats, imageUrl };
 }
 
 export default function Player({ loaderData }: Route.ComponentProps) {
 
-    const { player, stats } = loaderData;
+    const { player, stats, imageUrl } = loaderData;
     const currentSeason = getCurrentSeason();
 
     const navigation = useNavigation();
@@ -185,12 +189,12 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                         <div className="icon-wrapper">
                             <img
                                     className="player-icon"
-                                    src={`https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_400,q_auto:best/v1/people/${player.id}/headshot/67/current`}
+                                    src={imageUrl}
                                     // onLoad={() => setShowSpinner(false)}
                                     key={player.id}
                                     alt={player.fullName + " icon"}
                             />
-                            <div className="loading-image">loading...</div>
+                            {/* <div className="loading-image">loading...</div> */}
                             {/* {showSpinner &&
                                 <div className="loading-splash-spinner" />
                             } */}
@@ -373,7 +377,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                                 <td>{recentPitching.losses}</td>
                                                 <td>{recentPitching.era.toFixed(2)}</td>
                                                 <td>{recentPitching.inningsPitched}</td>
-                                                <td>{recentPitching.whip}</td>
+                                                <td>{recentPitching.whip.toFixed(2)}</td>
                                                 <td>{recentPitching.soPer9.toFixed(1)}</td>
                                                 <td>{recentPitching.bbPer9.toFixed(1)}</td>
                                                 <td>{recentPitching.saves}</td>
@@ -416,7 +420,7 @@ export default function Player({ loaderData }: Route.ComponentProps) {
                                                 <td>{row.losses}</td>
                                                 <td>{row.era.toFixed(2)}</td>
                                                 <td>{row.inningsPitched}</td>
-                                                <td>{row.whip}</td>
+                                                <td>{row.whip.toFixed(2)}</td>
                                                 <td>{row.soPer9.toFixed(1)}</td>
                                                 <td>{row.bbPer9.toFixed(1)}</td>
                                                 <td>{row.saves}</td>
