@@ -3,6 +3,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  Links,
 } from "react-router";
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -16,12 +17,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml"/>
         <link rel="icon" href="/favicon-48.png" sizes="48x48" type="image/png"/>
-        {/* <link rel="stylesheet" href="app/app.css"/> */}
+        {/* <link rel="stylesheet" href="./app.css"/> */}
       </head>
       <body>
         {children}
         <ScrollRestoration />
         <Scripts />
+        <Links />
       </body>
     </html>
   );
