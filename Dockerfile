@@ -14,9 +14,14 @@ COPY --from=development-dependencies-env /app/node_modules /app/node_modules
 WORKDIR /app
 RUN npm run build
 
+
+
 FROM node:20-alpine
 COPY ./package.json package-lock.json /app/
 COPY --from=production-dependencies-env /app/node_modules /app/node_modules
 COPY --from=build-env /app/build /app/build
 WORKDIR /app
+ENV HOST=0.0.0.0
+ENV PORT=3000
+EXPOSE 3000
 CMD ["npm", "run", "start"]
